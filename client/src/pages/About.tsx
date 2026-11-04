@@ -1,77 +1,77 @@
-import { Link } from 'react-router-dom'
-import { Users, Award, Globe, Heart, ArrowRight } from 'lucide-react'
+import PageHead from '@/components/layout/PageHead'
+import CTA from '@/components/sections/CTA'
+import { steps } from '@/components/sections/Process'
 
-const team = [
-  { name: 'Eleanor Voss',   role: 'Founder & CEO',           bio: '25 years in Big Five publishing. Former VP at Penguin Random House.' },
-  { name: 'Marcus Adeyemi', role: 'Head of Ghostwriting',    bio: 'NYT bestselling ghostwriter. 200+ books. Author coach and mentor.' },
-  { name: 'Priya Sharma',   role: 'Editorial Director',      bio: 'Former HarperCollins editor. Specializes in memoir and business.' },
-  { name: 'Daniel O\'Brien', role: 'Creative Director',      bio: 'Award-winning book cover designer. 1,000+ covers published globally.' },
-]
-
-const values = [
-  { icon: Users, title: 'Author First',    desc: "Your book, your credit, your royalties. Always. We exist to serve your vision, not shape it." },
-  { icon: Award, title: 'Uncompromising Quality', desc: 'Every project is handled by professionals with verifiable publishing credentials.' },
-  { icon: Globe, title: 'Radical Transparency', desc: 'Written scopes before work begins. Itemized pricing. No surprises, ever.' },
-  { icon: Heart, title: 'Genuine Care',   desc: 'We celebrate every launch and treat every book as if it were our own story.' },
+const principles = [
+  { n: '01', title: 'Author first',  desc: 'Your book, your credit, your royalties. Always. We exist to serve your vision, not to shape it into ours.' },
+  { n: '02', title: 'Say the price', desc: 'A written scope and a fixed number before any work starts. No hourly billing, no scope creep conversations.' },
+  { n: '03', title: 'Say no',        desc: 'If a book is not ready, or we are not the right house for it, we say so. A house that never declines is not editing.' },
+  { n: '04', title: 'Finish things', desc: 'Every stage carries a date. Most books stall because nobody owns the next step. Someone here always does.' },
 ]
 
 export default function About() {
   return (
-    <div className="pt-24">
-      <section className="section-padding bg-dark-800 border-b border-dark-600">
-        <div className="container-max max-w-4xl mx-auto text-center">
-          <p className="text-primary-400 font-semibold uppercase tracking-widest text-sm mb-3">Our Story</p>
-          <h1 className="section-title mb-6">We Built Avansas Because Authors Deserved Better</h1>
-          <p className="text-lg text-gray-400 leading-relaxed">
-            Founded in 2010, Avansas Publishers was born from frustration. Our founder Eleanor Voss spent 25 years in traditional publishing and watched brilliant stories get buried under corporate gatekeeping. She built Avansas to give every author access to the same elite team — without giving up ownership, credit, or control.
-          </p>
-        </div>
-      </section>
+    <>
+      <PageHead
+        n="04"
+        title="The house"
+        sub="Avansas is a publishing house for authors with something to say. We write, edit, design, publish and market books, and we give the spine as much attention as the cover."
+      />
 
-      <section className="section-padding bg-dark-900">
-        <div className="container-max">
-          <h2 className="text-3xl font-serif font-bold text-white text-center mb-12">What We Believe</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map(v => (
-              <div key={v.title} className="card-dark text-center">
-                <div className="w-12 h-12 bg-primary-900/50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <v.icon className="w-6 h-6 text-primary-400" />
+      <section className="band panel">
+        <div className="wrap">
+          <div className="sh">
+            <span className="n num">01</span>
+            <h2>What we hold to</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10">
+            {principles.map(p => (
+              <div key={p.n} className="grid grid-cols-[52px_1fr] gap-4 py-5 hair-b items-baseline">
+                <span className="num text-muted">{p.n}</span>
+                <div>
+                  <h3 className="text-[1.15rem] mb-2">{p.title}</h3>
+                  <p className="text-muted text-[.92rem] leading-[1.55]">{p.desc}</p>
                 </div>
-                <h3 className="font-serif text-lg font-bold text-white mb-2">{v.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{v.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section-padding bg-dark-800">
-        <div className="container-max">
-          <h2 className="text-3xl font-serif font-bold text-white text-center mb-12">Meet the Leadership Team</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {team.map(member => (
-              <div key={member.name} className="card-dark text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-primary-600 to-gold-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-serif font-bold text-white">
-                  {member.name.charAt(0)}
-                </div>
-                <h3 className="font-semibold text-white mb-0.5">{member.name}</h3>
-                <div className="text-primary-400 text-sm mb-2">{member.role}</div>
-                <p className="text-gray-400 text-sm">{member.bio}</p>
+      <section className="band">
+        <div className="wrap">
+          <div className="sh">
+            <span className="n num">02</span>
+            <h2>Five steps. You approve each one.</h2>
+            <p className="sub">Nothing moves to the next stage until you sign off on the last.</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-0.5">
+            {steps.map(s => (
+              <div key={s.n} className="py-5 border-t border-hairline lg:border-t-0 lg:py-6 lg:pr-[18px]">
+                <div className="hidden lg:block h-2.5 mb-[18px]" style={{ background: 'var(--ink)' }} />
+                <span className="num text-muted block mb-2">{s.n}</span>
+                <h4 className="text-[1.06rem] mb-2">{s.title}</h4>
+                <p className="text-[.88rem] text-muted leading-[1.5]">{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section-padding bg-dark-900">
-        <div className="container-max text-center">
-          <h2 className="text-3xl font-serif font-bold text-white mb-4">Ready to Write Your Story?</h2>
-          <p className="text-gray-400 mb-8">Join 2,400+ authors who trusted us with their most important work.</p>
-          <Link to="/consultation" className="btn-primary inline-flex">
-            Book Free Consultation <ArrowRight className="w-4 h-4" />
-          </Link>
+      <section className="band-tight pb-20">
+        <div className="wrap">
+          <div className="sh">
+            <span className="n num">03</span>
+            <h2>Who you deal with</h2>
+            <p className="sub">
+              We have not published the team page yet. When we do it will carry real names and real
+              credits, not stock portraits. Until then you will meet your editor on the first call.
+            </p>
+          </div>
         </div>
       </section>
-    </div>
+
+      <CTA />
+    </>
   )
 }

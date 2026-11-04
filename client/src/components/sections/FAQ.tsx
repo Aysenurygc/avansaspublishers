@@ -1,61 +1,54 @@
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
-const faqs = [
-  {
-    q: 'Do I keep 100% ownership of my book?',
-    a: 'Absolutely. You own 100% of the copyright, royalties, and all rights to your book. We sign a strict NDA and never claim authorship or rights to your work.',
-  },
-  {
-    q: 'How long does ghostwriting take?',
-    a: 'Timelines depend on scope. A 50,000-word book typically takes 3–5 months from kickoff to final manuscript. Rush options are available. You receive a guaranteed completion date in your contract.',
-  },
-  {
-    q: 'How do you match me with the right writer?',
-    a: 'We review your project brief, preferred tone, and sample materials, then handpick 2–3 writers from our vetted team with experience in your genre. You choose who you work with.',
-  },
-  {
-    q: 'What if I\'m not satisfied with the work?',
-    a: 'We offer unlimited revisions until you are 100% satisfied. If we are unable to meet your expectations, you receive a full refund — guaranteed. We\'ve never had a project end without resolution.',
-  },
-  {
-    q: 'Where will my book be published?',
-    a: 'We publish to Amazon KDP, IngramSpark, Barnes & Noble Press, Apple Books, Kobo, Google Play Books, and 150+ additional retailers depending on your package.',
-  },
-  {
-    q: 'Do you offer payment plans?',
-    a: 'Yes. All packages include split payment options — typically 50% to start, 25% at midpoint, and 25% upon completion. Extended payment plans are available for larger projects.',
-  },
+export const faqs = [
+  { q: 'Who owns the book?',            a: 'You do. The copyright, the royalties and the credit are yours. We sign an NDA and we never claim authorship.' },
+  { q: 'How long does it take?',        a: 'A 50,000-word book runs three to five months from kickoff to final manuscript. Your contract carries a date, not an estimate.' },
+  { q: 'Who writes it?',                a: 'We shortlist two or three writers with real experience in your genre and send you their work. You pick. If it is not right, you pick again.' },
+  { q: "What if I don't like the draft?", a: 'Revisions are unlimited until it is right. If we still cannot get there, you get a refund.' },
+  { q: 'Where does it sell?',           a: 'Amazon KDP, IngramSpark, Barnes & Noble Press, Apple Books, Kobo and Google Play, plus up to 150 further retailers depending on the package.' },
+  { q: 'Can I pay in stages?',          a: 'Yes. Half to start, a quarter at the midpoint, a quarter on delivery. Longer plans on request for larger projects.' },
 ]
 
 export default function FAQ() {
   const [open, setOpen] = useState<number | null>(null)
 
   return (
-    <section className="section-padding bg-dark-800">
-      <div className="container-max">
-        <div className="text-center mb-16">
-          <p className="text-primary-400 font-semibold uppercase tracking-widest text-sm mb-3">FAQ</p>
-          <h2 className="section-title mb-4">Frequently Asked Questions</h2>
+    <section className="band">
+      <div className="wrap">
+        <div className="sh">
+          <span className="n num">06</span>
+          <h2>Questions, answered plainly</h2>
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-3">
-          {faqs.map((faq, i) => (
-            <div key={i} className="border border-dark-600 rounded-xl overflow-hidden">
-              <button
-                onClick={() => setOpen(open === i ? null : i)}
-                className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-dark-700 transition-colors">
-                <span className="font-semibold text-white pr-4">{faq.q}</span>
-                <ChevronDown className={cn('w-5 h-5 text-primary-400 flex-shrink-0 transition-transform', open === i && 'rotate-180')} />
-              </button>
-              {open === i && (
-                <div className="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-dark-600 pt-4">
-                  {faq.a}
+        <div className="rule-t max-w-[860px]">
+          {faqs.map((f, i) => {
+            const isOpen = open === i
+            return (
+              <div key={f.q} className="hair-b">
+                <button
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  aria-expanded={isOpen}
+                  className="w-full text-left flex items-center justify-between gap-4 py-5"
+                  style={{ fontStretch: '80%', fontWeight: 650, fontSize: '1rem' }}
+                >
+                  {f.q}
+                  <span className="relative flex-none w-[15px] h-[15px]" aria-hidden="true">
+                    <span className="absolute left-0 top-[6.5px] w-[15px] h-0.5" style={{ background: 'var(--ink)' }} />
+                    <span
+                      className="absolute left-[6.5px] top-0 w-0.5 h-[15px] transition-transform duration-200"
+                      style={{ background: 'var(--ink)', transform: isOpen ? 'scaleY(0)' : 'scaleY(1)' }}
+                    />
+                  </span>
+                </button>
+                <div
+                  className="overflow-hidden transition-[max-height] duration-300"
+                  style={{ maxHeight: isOpen ? 340 : 0 }}
+                >
+                  <p className="pb-5 text-muted text-[.93rem] leading-[1.62] max-w-[62ch]">{f.a}</p>
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

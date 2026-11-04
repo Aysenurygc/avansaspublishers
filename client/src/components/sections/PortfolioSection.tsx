@@ -1,45 +1,46 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import Spine from '@/components/ui/Spine'
 
-const books = [
-  { title: 'The Leadership Code',    author: 'James Richardson', genre: 'Business',     color: 'from-orange-600 to-red-700' },
-  { title: 'Digital Disruption',     author: 'Sarah Chen',       genre: 'Technology',   color: 'from-blue-600 to-violet-700' },
-  { title: 'Healing Beyond Medicine',author: 'Dr. Marcus Webb',  genre: 'Health',       color: 'from-green-600 to-teal-700' },
-  { title: 'Unlocking Your Potential',author: 'Lisa Fontaine',   genre: 'Self-Help',    color: 'from-purple-600 to-pink-700' },
-  { title: 'Beyond the Front Line',  author: 'Robert Tanner',    genre: 'Memoir',       color: 'from-amber-600 to-orange-700' },
-  { title: 'The Profitable Mind',    author: 'Amanda Kozlowski', genre: 'Business',     color: 'from-cyan-600 to-blue-700' },
+export const books = [
+  { title: 'The Quiet Hours',  author: 'Ruth Abara',      genre: 'Memoir',     width: 48, height: 300, tone: 'dark'  as const },
+  { title: 'The Hard Part',    author: 'Leo Vanterpool',  genre: 'Business',   width: 44, height: 286, tone: 'light' as const },
+  { title: 'Hire Slowly',      author: 'Ines Calder',     genre: 'Business',   width: 40, height: 268, tone: 'dark'  as const },
+  { title: 'Operating Year',   author: 'Dana Whitcombe',  genre: 'Business',   width: 46, height: 294, tone: 'dark'  as const },
+  { title: 'Small Margins',    author: 'Marcus Oyelaran', genre: 'Business',   width: 42, height: 262, tone: 'light' as const },
+  { title: "My Father's War",  author: 'Grace Nguyen',    genre: 'Memoir',     width: 44, height: 278, tone: 'dark'  as const },
+  { title: 'Code & Culture',   author: 'Priya Mehta',     genre: 'Technology', width: 38, height: 250, tone: 'light' as const },
+  { title: 'The Gut Reset',    author: 'Kelly Barnes',    genre: 'Health',     width: 42, height: 272, tone: 'dark'  as const },
+  { title: 'Fearless Founder', author: 'Darnell Lewis',   genre: 'Business',   width: 40, height: 256, tone: 'light' as const },
 ]
 
 export default function PortfolioSection() {
   return (
-    <section className="section-padding bg-dark-900">
-      <div className="container-max">
-        <div className="text-center mb-16">
-          <p className="text-primary-400 font-semibold uppercase tracking-widest text-sm mb-3">Our Work</p>
-          <h2 className="section-title mb-4">Books That Define Careers <br />and Change Lives</h2>
-          <p className="section-subtitle mx-auto">
-            A selection from our portfolio of 5,000+ published titles across every genre.
+    <section className="band">
+      <div className="wrap">
+        <div className="sh">
+          <span className="n num">03</span>
+          <h2>On the shelf</h2>
+          <p className="sub">
+            A book shows one thing in a shop: its spine. Sample titles and authors below are placeholders.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {books.map(book => (
-            <div key={book.title} className="group cursor-pointer">
-              <div className={`aspect-[2/3] rounded-xl bg-gradient-to-b ${book.color} flex items-end p-3 shadow-lg group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-300`}>
-                <div>
-                  <div className="text-xs text-white/60 uppercase tracking-wider mb-1">{book.genre}</div>
-                  <div className="text-sm font-serif font-bold text-white leading-tight">{book.title}</div>
-                  <div className="text-xs text-white/70 mt-1">{book.author}</div>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="flex items-end gap-[5px] overflow-x-auto pb-1.5" aria-label="Spine wall">
+          <Spine width={48} height={300} tone="dark"  title={books[0].title} author={books[0].author} />
+          <Spine width={44} height={286} tone="light" title={books[1].title} author={books[1].author} />
+          <Spine width={40} height={268} tone="dark"  title={books[2].title} author={books[2].author} />
+          <Spine width={20} height={240} tone="light" />
+          <Spine width={46} height={294} tone="dark"  title={books[3].title} author={books[3].author} />
+          <Spine width={42} height={262} tone="light" title={books[4].title} author={books[4].author} />
+          <Spine width={18} height={228} tone="light" />
+          <Spine width={44} height={278} tone="dark"  title={books[5].title} author={books[5].author} />
+          <Spine width={38} height={250} tone="light" title={books[6].title} author={books[6].author} />
+          <Spine width={42} height={272} tone="dark"  title={books[7].title} author={books[7].author} />
+          <Spine width={40} height={256} tone="light" title={books[8].title} author={books[8].author} />
         </div>
 
-        <div className="text-center mt-10">
-          <Link to="/portfolio" className="btn-outline inline-flex items-center gap-2">
-            View Full Portfolio <ArrowRight className="w-4 h-4" />
-          </Link>
+        <div className="mt-9">
+          <Link to="/portfolio" className="btn-o">See every book</Link>
         </div>
       </div>
     </section>

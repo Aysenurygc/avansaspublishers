@@ -1,98 +1,88 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BookOpen, Clock, CheckCircle, MessageSquare, FileText, Bell, User } from 'lucide-react'
+import PageHead from '@/components/layout/PageHead'
+import { projects } from '@/lib/api'
 
-const projects = [
-  { title: 'The Art of Negotiation', service: 'Ghostwriting', status: 'In Progress', progress: 65, dueDate: 'Jan 15, 2027', lastUpdate: '2 hours ago' },
-  { title: 'Mindful Leadership',     service: 'Editing',      status: 'Review',      progress: 90, dueDate: 'Nov 20, 2026', lastUpdate: 'Yesterday' },
-]
+type Project = {
+  id: string
+  title: string
+  service: string
+  status: string
+  progress: number
+  dueDate: string | null
+  updatedAt: string
+}
 
-const statusColors: Record<string, string> = {
-  'In Progress': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  'Review':      'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  'Completed':   'bg-green-500/20 text-green-400 border-green-500/30',
-  'Draft':       'bg-gray-500/20 text-gray-400 border-gray-500/30',
+const statusLabel: Record<string, string> = {
+  PENDING: 'Not started', ACTIVE: 'In progress', REVIEW: 'With you',
+  REVISION: 'In revision', COMPLETED: 'Done', PAUSED: 'Paused',
 }
 
 export default function Dashboard() {
+  const [list, setList] = useState<Project[] | null>(null)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    projects.list().then(setList).catch(() => setError(true))
+  }, [])
+
   return (
-    <div className="pt-24 min-h-screen bg-dark-900">
-      <div className="container-max section-padding">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <h1 className="text-3xl font-serif font-bold text-white">Client Portal</h1>
-            <p className="text-gray-400 mt-1">Welcome back. Here's your project overview.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="relative w-10 h-10 bg-dark-800 border border-dark-600 rounded-lg flex items-center justify-center hover:border-primary-600 transition-colors">
-              <Bell className="w-5 h-5 text-gray-400" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full" />
-            </button>
-            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center font-bold text-white">A</div>
-          </div>
-        </div>
+    <>
+      <PageHead n="—" title="Your books" sub="Where each book stands, updated as we work." />
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          {[
-            { label: 'Active Projects', value: '2', icon: BookOpen,      color: 'text-blue-400' },
-            { label: 'Pending Reviews', value: '1', icon: Clock,         color: 'text-amber-400' },
-            { label: 'Completed',       value: '3', icon: CheckCircle,   color: 'text-green-400' },
-            { label: 'Messages',        value: '5', icon: MessageSquare, color: 'text-purple-400' },
-          ].map(stat => (
-            <div key={stat.label} className="card-dark flex items-center gap-4">
-              <stat.icon className={`w-8 h-8 ${stat.color}`} />
-              <div>
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <div className="text-sm text-gray-500">{stat.label}</div>
-              </div>
+      <section className="pb-20">
+        <div className="wrap">
+          {error && (
+            <div className="p-6" style={{ border: '2px solid var(--ink)' }}>
+              <h2 className="text-[1.3rem] mb-2">Sign in to see this</h2>
+              <p className="text-muted text-[.93rem] mb-5">Your projects load once you are signed in.</p>
+              <Link to="/login" className="btn">Sign in</Link>
             </div>
-          ))}
-        </div>
+          )}
 
-        {/* Projects */}
-        <div className="mb-10">
-          <h2 className="text-xl font-serif font-bold text-white mb-4">Active Projects</h2>
-          <div className="space-y-4">
-            {projects.map(p => (
-              <div key={p.title} className="card-dark">
-                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                  <div>
-                    <h3 className="font-semibold text-white text-lg">{p.title}</h3>
-                    <div className="text-sm text-gray-400 mt-0.5">{p.service} · Due {p.dueDate}</div>
+          {!error && list === null && (
+            <p className="lbl text-muted">Loading…</p>
+          )}
+
+          {!error && list !== null && list.length === 0 && (
+            <div className="p-6" style={{ border: '2px solid var(--ink)' }}>
+              <h2 className="text-[1.3rem] mb-2">Nothing here yet</h2>
+              <p className="text-muted text-[.93rem] mb-5">
+                When a book is commissioned it appears here with its stage, its progress and its date.
+              </p>
+              <Link to="/consultation" className="btn">Start your book</Link>
+            </div>
+          )}
+
+          {!error && list !== null && list.length > 0 && (
+            <div style={{ borderTop: '2px solid var(--ink)' }}>
+              {list.map(p => (
+                <div key={p.id} className="py-6 hair-b">
+                  <div className="flex flex-wrap items-baseline justify-between gap-3 mb-4">
+                    <div>
+                      <h3 className="text-[1.3rem] mb-1">{p.title}</h3>
+                      <span className="lbl text-muted" style={{ fontSize: '.66rem' }}>
+                        {p.service}
+                        {p.dueDate && ` · due ${new Date(p.dueDate).toLocaleDateString()}`}
+                      </span>
+                    </div>
+                    <span className="lbl px-2.5 py-1.5" style={{ background: 'var(--ink)', color: 'var(--ground)', fontSize: '.62rem' }}>
+                      {statusLabel[p.status] ?? p.status}
+                    </span>
                   </div>
-                  <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${statusColors[p.status]}`}>{p.status}</span>
-                </div>
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Progress</span>
-                  <span className="text-white font-medium">{p.progress}%</span>
-                </div>
-                <div className="h-2 bg-dark-600 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full transition-all duration-500" style={{ width: `${p.progress}%` }} />
-                </div>
-                <div className="mt-3 text-xs text-gray-500">Last updated {p.lastUpdate}</div>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Quick actions */}
-        <div>
-          <h2 className="text-xl font-serif font-bold text-white mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { icon: MessageSquare, label: 'Message Your Team', to: '/contact' },
-              { icon: FileText,      label: 'View Documents',    to: '#' },
-              { icon: User,          label: 'Account Settings',  to: '#' },
-            ].map(action => (
-              <Link key={action.label} to={action.to} className="card-dark flex items-center gap-3 hover:border-primary-600 transition-colors">
-                <action.icon className="w-5 h-5 text-primary-400" />
-                <span className="text-sm font-medium text-gray-300">{action.label}</span>
-              </Link>
-            ))}
-          </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 h-2.5" style={{ background: 'var(--hairline)' }}>
+                      <div className="h-full" style={{ width: `${p.progress}%`, background: 'var(--ink)' }} />
+                    </div>
+                    <span className="num" style={{ fontSize: '.84rem' }}>{p.progress}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      </section>
+    </>
   )
 }

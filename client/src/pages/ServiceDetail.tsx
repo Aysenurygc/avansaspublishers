@@ -1,142 +1,123 @@
 import { useParams, Link } from 'react-router-dom'
-import { ArrowRight, Check, ArrowLeft } from 'lucide-react'
+import CTA from '@/components/sections/CTA'
+import { services } from '@/components/sections/ServicesSection'
 
-const serviceData: Record<string, {
-  title: string
-  tagline: string
-  description: string
-  process: string[]
-  includes: string[]
-  startingAt: number
-}> = {
+type Detail = { tagline: string; body: string; process: string[]; includes: string[] }
+
+const detail: Record<string, Detail> = {
   ghostwriting: {
-    title: 'Ghostwriting',
-    tagline: 'Your Story, Told Perfectly',
-    description: "Our elite ghostwriters have collectively written over 3,000 books across every genre. We match you with a writer who understands your voice, your audience, and your vision. You receive a polished, publication-ready manuscript — and you keep every right and every royalty.",
-    process: ['Discovery call & voice interview', 'Writer matching & approval', 'Outline & chapter-by-chapter approval', 'Draft delivery in phases', 'Revisions until perfect', 'Final manuscript delivery'],
-    includes: ['Full manuscript (any length)', 'Voice matching interview', 'Chapter-by-chapter review', 'Unlimited revisions', 'Plagiarism check', 'Strict NDA & IP transfer', 'Author retains 100% credit & royalties'],
-    startingAt: 1249,
+    tagline: 'We write it. You own it.',
+    body: "You talk, we write, you approve. Our writers have book-length work behind them and no interest in seeing their own name on your cover. You keep the copyright, the credit and every royalty, and the contract says so before we start.",
+    process: ['Discovery call and voice interview', 'Writer shortlist, you choose', 'Chapter map approved by you', 'Drafts in batches', 'Revisions until it reads right', 'Final manuscript delivered'],
+    includes: ['Full manuscript', 'Voice interviews', 'Chapter-by-chapter review', 'Unlimited revisions', 'Plagiarism check', 'NDA and IP assignment', 'You keep 100% of royalties'],
   },
   'book-publishing': {
-    title: 'Book Publishing',
-    tagline: 'From Manuscript to Global Bookshelf',
-    description: 'We handle every technical step of the publishing process — ISBNs, metadata, category research, platform setup, and distribution. Your book reaches 150+ retailers worldwide.',
-    process: ['ISBN assignment', 'Metadata & keyword optimization', 'Category & BISAC selection', 'File preparation & QC', 'Platform submission', 'Sales dashboard access'],
-    includes: ['ISBNs for all formats', 'Amazon KDP & IngramSpark', 'eBook & print publishing', '150+ retailer distribution', 'Author copies (print)', 'Royalty setup', 'Sales tracking access'],
-    startingAt: 499,
+    tagline: 'From file to shelf.',
+    body: 'The technical half of publishing: ISBNs, metadata, category research, file validation and upload. Done badly it costs you sales for years. Done once, properly, it stops being your problem.',
+    process: ['ISBN assignment', 'Metadata and keywords', 'Category selection', 'File preparation and QC', 'Platform upload', 'Sales dashboard handover'],
+    includes: ['ISBNs for every format', 'Amazon KDP and IngramSpark', 'Print and digital editions', '150+ retailer distribution', 'Author copies', 'Royalty setup', 'Sales reporting access'],
   },
   editing: {
-    title: 'Editing & Proofreading',
-    tagline: 'Make Every Word Count',
-    description: 'Our editorial team brings decades of Big Five publishing experience. Whether you need high-level developmental feedback or a final polish before launch, we have the editor for your book.',
-    process: ['Manuscript assessment', 'Developmental feedback', 'Line & copy editing', 'Author revisions', 'Final proofreading', 'Clean manuscript delivery'],
-    includes: ['Developmental editing', 'Line editing', 'Copyediting', 'Proofreading', 'Style guide creation', 'Two-pass editing', 'Tracked changes (Word)'],
-    startingAt: 299,
+    tagline: 'The book you meant to write.',
+    body: "An editor's first job is to find the book inside the draft and protect your voice while everything around it gets sharper. Structural first, then line, then copy, then a proofread nobody rushes.",
+    process: ['Manuscript assessment', 'Structural report', 'Line and copy edit', 'Your revisions', 'Final proofread', 'Clean file delivered'],
+    includes: ['Structural editing', 'Line editing', 'Copyediting', 'Proofreading', 'Style sheet', 'Two full passes', 'Tracked changes'],
   },
   'cover-design': {
-    title: 'Cover Design',
-    tagline: 'Judge a Book by Its Cover',
-    description: 'We research the best-selling titles in your genre and design covers that both fit the market and stand out on the shelf. Five unique concepts, unlimited revisions.',
-    process: ['Genre & competitor research', '5 initial concepts', 'Client feedback round', 'Refinement', 'Final approval', 'All file formats delivered'],
-    includes: ['Front cover', 'Back cover & spine', 'eBook cover', 'Social media kit', '5 initial concepts', 'Unlimited revisions', 'Print-ready files (300 DPI)'],
-    startingAt: 349,
+    tagline: 'It has to work at thumbnail size.',
+    body: 'We research what sells in your category, then design against it — not away from it. Five routes, then one refined until it holds up as a 60-pixel thumbnail and as a printed object in a hand.',
+    process: ['Category research', 'Five concepts', 'Your feedback', 'Refinement', 'Approval', 'All files delivered'],
+    includes: ['Front cover', 'Back cover and spine', 'eBook cover', 'Social media crops', 'Five initial concepts', 'Unlimited revisions', 'Print-ready at 300 DPI'],
   },
   formatting: {
-    title: 'Interior Formatting',
-    tagline: 'Professional Layout, Every Format',
-    description: 'Proper formatting is invisible — readers never notice it, but they immediately notice when it\'s wrong. Our formatters ensure your book meets all platform standards.',
-    process: ['Manuscript review', 'Style template selection', 'Interior layout', 'Image & chart placement', 'Proofing', 'Final file delivery'],
-    includes: ['Print-ready PDF', 'EPUB 3.0', 'MOBI (Kindle)', 'Custom chapter headers', 'Image placement', 'Front & back matter', 'Platform submission files'],
-    startingAt: 199,
+    tagline: 'Invisible when right.',
+    body: 'Readers never notice good formatting and always notice bad. Proper margins, a real baseline grid, running heads that make sense, and a spine width calculated from your actual page count and paper stock.',
+    process: ['Manuscript review', 'Template selection', 'Interior layout', 'Images and tables placed', 'Proofing pass', 'Final files'],
+    includes: ['Print-ready PDF', 'EPUB 3', 'Kindle format', 'Custom chapter openers', 'Image placement', 'Front and back matter', 'Spine width calculated'],
   },
   audiobook: {
-    title: 'Audiobook Production',
-    tagline: 'Bring Your Book to Life',
-    description: 'The audiobook market is booming. We handle everything from narrator casting to final mastering and distribution on Audible, Apple Books, Spotify, and more.',
-    process: ['Narrator casting & selection', 'Recording schedule', 'Studio recording', 'Quality control', 'Mastering & post-production', 'Platform distribution'],
-    includes: ['Professional narrator', 'Studio-quality recording', 'ACX standards compliance', 'Audible & iTunes distribution', 'Findaway Voices distribution', 'Chapter markers', 'Retail-ready files'],
-    startingAt: 799,
+    tagline: 'Read aloud, properly.',
+    body: 'Narrator casting is the whole job. We shortlist voices against your book, record in a treated studio, then master to retail specification and handle distribution.',
+    process: ['Narrator casting', 'Recording schedule', 'Studio recording', 'Quality control', 'Mastering', 'Distribution'],
+    includes: ['Professional narrator', 'Studio recording', 'Retail spec compliance', 'Audible and Apple', 'Spotify and Findaway', 'Chapter markers', 'Retail-ready masters'],
   },
   marketing: {
-    title: 'Book Marketing',
-    tagline: 'Get Found. Get Read. Get Ranked.',
-    description: 'Our marketing team combines Amazon algorithm expertise, social media strategy, and traditional PR to put your book in front of the right readers at the right time.',
-    process: ['Market research & positioning', 'Amazon listing optimization', 'ARC reader program', 'Launch campaign setup', 'Campaign execution', 'Performance reporting'],
-    includes: ['Amazon keyword optimization', 'A+ content (Amazon)', 'ARC reader distribution', 'Social media campaign', 'Email launch sequence', 'Press release writing', 'Monthly reporting'],
-    startingAt: 599,
+    tagline: 'Found, then read.',
+    body: 'Listing optimisation first, because that is where the money is. Then advance readers, a launch sequence and press outreach, measured against sales rather than impressions.',
+    process: ['Positioning research', 'Listing optimisation', 'Advance reader programme', 'Launch sequence built', 'Campaign run', 'Monthly reporting'],
+    includes: ['Keyword optimisation', 'Enhanced listing content', 'Advance reader distribution', 'Social campaign', 'Email launch sequence', 'Press release', 'Monthly reports'],
   },
   'author-website': {
-    title: 'Author Website Design',
-    tagline: 'Your Home Base Online',
-    description: 'A professional author website that sells your books, grows your mailing list, and establishes your brand. Built on modern tech with SEO and speed built in.',
-    process: ['Brand & style consultation', 'Wireframe & mockup', 'Design approval', 'Development', 'Content population', 'Launch & training'],
-    includes: ['Custom design', '5–10 pages', 'Mobile responsive', 'SEO optimization', 'Email list integration', 'Built-in bookstore', 'Blog functionality', 'Analytics setup'],
-    startingAt: 999,
+    tagline: 'One page that does the work.',
+    body: 'A fast, plain site that sells the book and grows a mailing list. No sliders, no stock photography, no page that takes four seconds to show a sentence.',
+    process: ['Brand consultation', 'Wireframe', 'Design approval', 'Build', 'Content loaded', 'Launch and handover'],
+    includes: ['Custom design', 'Five to ten pages', 'Mobile first', 'Search optimisation', 'Mailing list integration', 'Book store built in', 'Analytics'],
   },
 }
 
 export default function ServiceDetail() {
   const { slug } = useParams<{ slug: string }>()
-  const service = slug ? serviceData[slug] : null
+  const d = slug ? detail[slug] : undefined
+  const meta = services.find(s => s.slug === slug)
 
-  if (!service) {
+  if (!d || !meta) {
     return (
-      <div className="pt-32 text-center section-padding">
-        <h1 className="section-title mb-4">Service Not Found</h1>
-        <Link to="/services" className="btn-primary">Back to Services</Link>
-      </div>
+      <section className="band">
+        <div className="wrap">
+          <div className="sh">
+            <span className="n num">—</span>
+            <h1>No such service</h1>
+            <p className="sub">That page does not exist. The eight we do offer are all here.</p>
+          </div>
+          <Link to="/services" className="btn">All services</Link>
+        </div>
+      </section>
     )
   }
 
   return (
-    <div className="pt-24">
-      <section className="section-padding bg-dark-800 border-b border-dark-600">
-        <div className="container-max">
-          <Link to="/services" className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-8 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to Services
-          </Link>
-          <div className="max-w-3xl">
-            <p className="text-primary-400 font-semibold uppercase tracking-widest text-sm mb-3">{service.tagline}</p>
-            <h1 className="section-title mb-4">{service.title}</h1>
-            <p className="text-lg text-gray-400 leading-relaxed mb-8">{service.description}</p>
-            <div className="flex flex-wrap gap-4">
-              <Link to="/consultation" className="btn-primary">
-                Get Started – Free Consultation <ArrowRight className="w-4 h-4" />
-              </Link>
-              <span className="inline-flex items-center text-gray-400 text-sm">
-                Starting from <span className="text-white font-bold text-xl ml-2">${service.startingAt.toLocaleString()}</span>
-              </span>
-            </div>
+    <>
+      <section className="band-tight pt-14">
+        <div className="wrap">
+          <Link to="/services" className="lbl text-muted hover:text-ink inline-block mb-8">← All services</Link>
+          <div className="sh">
+            <span className="n num">{meta.n}</span>
+            <h1>{meta.title}</h1>
+            <p className="sub">{d.tagline}</p>
+          </div>
+          <p className="text-[1.04rem] leading-[1.6] max-w-[62ch] text-muted mb-8">{d.body}</p>
+          <div className="flex flex-wrap items-center gap-5">
+            <Link to="/consultation" className="btn">Start your book</Link>
+            <span className="num" style={{ fontSize: '.9rem' }}>from ${meta.from.toLocaleString()}</span>
           </div>
         </div>
       </section>
 
-      <section className="section-padding bg-dark-900">
-        <div className="container-max grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <section className="band panel">
+        <div className="wrap grid gap-12 grid-cols-1 lg:grid-cols-2">
           <div>
-            <h2 className="text-2xl font-serif font-bold text-white mb-6">What's Included</h2>
-            <ul className="space-y-3">
-              {service.includes.map(item => (
-                <li key={item} className="flex items-center gap-3 text-gray-300">
-                  <Check className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                  {item}
-                </li>
+            <h2 className="text-[1.5rem] mb-5">What's included</h2>
+            <ul role="list" style={{ borderTop: '1px solid var(--hairline)' }}>
+              {d.includes.map(i => (
+                <li key={i} className="py-3 hair-b text-[.93rem]">{i}</li>
               ))}
             </ul>
           </div>
           <div>
-            <h2 className="text-2xl font-serif font-bold text-white mb-6">Our Process</h2>
-            <div className="space-y-4">
-              {service.process.map((step, i) => (
-                <div key={i} className="flex items-start gap-4">
-                  <span className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">{i + 1}</span>
-                  <span className="text-gray-300 pt-1">{step}</span>
+            <h2 className="text-[1.5rem] mb-5">How it runs</h2>
+            <div style={{ borderTop: '1px solid var(--hairline)' }}>
+              {d.process.map((p, i) => (
+                <div key={p} className="grid grid-cols-[46px_1fr] gap-4 py-3 hair-b items-baseline">
+                  <span className="num text-muted">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="text-[.93rem]">{p}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </section>
-    </div>
+
+      <CTA />
+    </>
   )
 }

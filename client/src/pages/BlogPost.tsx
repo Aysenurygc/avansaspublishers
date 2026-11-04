@@ -1,49 +1,70 @@
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Clock, Calendar } from 'lucide-react'
+import CTA from '@/components/sections/CTA'
+import { posts } from '@/components/sections/BlogSection'
 
 export default function BlogPost() {
-  const { slug: _slug } = useParams()
+  const { slug } = useParams<{ slug: string }>()
+  const post = posts.find(p => p.slug === slug)
+
+  if (!post) {
+    return (
+      <section className="band">
+        <div className="wrap">
+          <div className="sh">
+            <span className="n num">—</span>
+            <h1>No such piece</h1>
+            <p className="sub">That page does not exist.</p>
+          </div>
+          <Link to="/blog" className="btn">Everything from the desk</Link>
+        </div>
+      </section>
+    )
+  }
 
   return (
-    <div className="pt-24">
-      <article className="section-padding">
-        <div className="container-max max-w-3xl">
-          <Link to="/blog" className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-8 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to Blog
-          </Link>
+    <>
+      <article className="band-tight pt-14 pb-20">
+        <div className="wrap max-w-[760px]">
+          <Link to="/blog" className="lbl text-muted hover:text-ink inline-block mb-8">← From the desk</Link>
 
-          <div className="h-64 rounded-2xl bg-gradient-to-br from-orange-600 to-red-700 mb-8" />
-
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-            <span className="text-primary-400 font-semibold uppercase text-xs tracking-wider">Writing Tips</span>
-            <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> November 3, 2026</span>
-            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> 8 min read</span>
+          <div className="sh">
+            <span className="n num">{post.n}</span>
+            <h1>{post.title}</h1>
           </div>
 
-          <h1 className="text-4xl font-serif font-bold text-white mb-6 leading-tight">
-            The 7 Secrets Behind Every Bestselling Book
-          </h1>
+          <p className="lbl text-muted mb-8">{post.cat} · {post.read} read</p>
 
-          <div className="prose prose-invert prose-lg max-w-none text-gray-300 space-y-6">
-            <p>After publishing over 5,000 books across every genre, we've identified the patterns that separate breakout bestsellers from books that quietly fade into obscurity. The differences aren't always what you'd expect.</p>
+          <div className="flex flex-col gap-5 text-[1.02rem] leading-[1.65]">
+            <p>{post.excerpt}</p>
 
-            <h2 className="text-2xl font-serif font-bold text-white">1. The Title Does Half the Work</h2>
-            <p>The best-selling business books of the last decade share a formula: a bold claim + a specific mechanism. <em>Atomic Habits</em>. <em>The 4-Hour Workweek</em>. <em>Deep Work</em>. Readers buy the promise before they read a single word.</p>
+            <h2 className="text-[1.5rem] mt-4">It is seen sideways</h2>
+            <p>
+              A spine is the hardest piece of design in a book. It is narrow, it is read at an angle,
+              and in a shop it is often the only part a reader ever sees. If a design works there, it
+              works anywhere.
+            </p>
 
-            <h2 className="text-2xl font-serif font-bold text-white">2. The First Chapter Is a Sales Page</h2>
-            <p>Your first chapter must answer one question: <strong>why does this reader need this book right now?</strong> Every bestseller opens by articulating a pain point the reader already has and positioning the book as the solution.</p>
+            <h2 className="text-[1.5rem] mt-4">It has a real width</h2>
+            <p>
+              Spine width is not a design choice. It comes out of your page count and the paper stock,
+              and it changes if the book runs long. Getting it wrong means the type wraps onto the
+              covers, which is why we calculate it from the final interior rather than the estimate.
+            </p>
 
-            <h2 className="text-2xl font-serif font-bold text-white">3. Structure Is More Important Than Prose</h2>
-            <p>Readers forgive imperfect sentences. They don't forgive a book that's hard to follow. The clearest path from problem to solution wins every time.</p>
+            <h2 className="text-[1.5rem] mt-4">It carries three things</h2>
+            <p>
+              Title, author, house. In that order, at that priority. Anything else — a rule, a device,
+              a strapline — earns its place or comes off.
+            </p>
           </div>
 
-          <div className="border-t border-dark-600 mt-12 pt-8">
-            <Link to="/consultation" className="btn-primary">
-              Ready to Write Your Book? Book a Free Consultation
-            </Link>
+          <div className="mt-12 pt-8" style={{ borderTop: '2px solid var(--ink)' }}>
+            <Link to="/consultation" className="btn">Start your book</Link>
           </div>
         </div>
       </article>
-    </div>
+
+      <CTA />
+    </>
   )
 }

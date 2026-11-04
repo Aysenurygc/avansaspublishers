@@ -1,67 +1,43 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react'
+import Colophon from '@/components/ui/Colophon'
 
 const services = [
-  { label: 'Ghostwriting',         slug: 'ghostwriting' },
-  { label: 'Book Publishing',      slug: 'book-publishing' },
-  { label: 'Editing & Proofreading', slug: 'editing' },
-  { label: 'Cover Design',         slug: 'cover-design' },
-  { label: 'Audiobook Production', slug: 'audiobook' },
-  { label: 'Book Marketing',       slug: 'marketing' },
+  { label: 'Ghostwriting',  slug: 'ghostwriting' },
+  { label: 'Editing',       slug: 'editing' },
+  { label: 'Cover design',  slug: 'cover-design' },
+  { label: 'Publishing',    slug: 'book-publishing' },
+  { label: 'Audiobook',     slug: 'audiobook' },
+  { label: 'Marketing',     slug: 'marketing' },
 ]
 
-const company = [
-  { label: 'About Us',      to: '/about' },
-  { label: 'Portfolio',     to: '/portfolio' },
-  { label: 'Pricing',       to: '/pricing' },
-  { label: 'Blog',          to: '/blog' },
-  { label: 'Careers',       to: '/careers' },
-  { label: 'Press',         to: '/press' },
-]
-
-const socials = [
-  { icon: Facebook,  href: '#', label: 'Facebook' },
-  { icon: Twitter,   href: '#', label: 'Twitter' },
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Linkedin,  href: '#', label: 'LinkedIn' },
-  { icon: Youtube,   href: '#', label: 'YouTube' },
+const house = [
+  { label: 'Books',   to: '/portfolio' },
+  { label: 'Process', to: '/about' },
+  { label: 'Pricing', to: '/pricing' },
+  { label: 'Journal', to: '/blog' },
+  { label: 'Contact', to: '/contact' },
 ]
 
 export default function Footer() {
   return (
-    <footer className="bg-dark-800 border-t border-dark-600">
-      <div className="container-max section-padding pb-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-16">
-          {/* Brand */}
-          <div className="lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-gold-500 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-serif text-xl font-bold text-white">
-                Avansas<span className="text-primary-400">Publishers</span>
-              </span>
+    <footer style={{ background: 'var(--ink)', color: 'var(--ground)', paddingBlock: '56px 26px' }}>
+      <div className="wrap">
+        <div className="grid gap-9 mb-11 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+          <div>
+            <Link to="/" className="inline-block mb-3.5">
+              <Colophon className="text-[1.9rem]" />
             </Link>
-            <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Transforming stories into bestsellers. World-class ghostwriting and publishing services tailored for visionary authors.
+            <p className="text-[.88rem] opacity-70 leading-relaxed max-w-[30ch]">
+              A publishing house for authors with something to say.
             </p>
-            <div className="flex gap-3">
-              {socials.map(s => (
-                <a key={s.label} href={s.href} aria-label={s.label}
-                  className="w-9 h-9 bg-dark-700 hover:bg-primary-600 rounded-lg flex items-center justify-center transition-colors">
-                  <s.icon className="w-4 h-4 text-gray-400 hover:text-white" />
-                </a>
-              ))}
-            </div>
           </div>
 
-          {/* Services */}
           <div>
-            <h4 className="font-semibold text-white mb-4">Services</h4>
-            <ul className="space-y-2.5">
+            <h4 className="lbl mb-4 opacity-55" style={{ fontSize: '.72rem' }}>Services</h4>
+            <ul className="flex flex-col gap-2.5" role="list">
               {services.map(s => (
                 <li key={s.slug}>
-                  <Link to={`/services/${s.slug}`} className="text-sm text-gray-400 hover:text-primary-400 transition-colors">
+                  <Link to={`/services/${s.slug}`} className="text-[.88rem] opacity-80 hover:opacity-100 hover:underline underline-offset-4">
                     {s.label}
                   </Link>
                 </li>
@@ -69,55 +45,39 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
           <div>
-            <h4 className="font-semibold text-white mb-4">Company</h4>
-            <ul className="space-y-2.5">
-              {company.map(item => (
-                <li key={item.to}>
-                  <Link to={item.to} className="text-sm text-gray-400 hover:text-primary-400 transition-colors">
-                    {item.label}
+            <h4 className="lbl mb-4 opacity-55" style={{ fontSize: '.72rem' }}>House</h4>
+            <ul className="flex flex-col gap-2.5" role="list">
+              {house.map(h => (
+                <li key={h.to}>
+                  <Link to={h.to} className="text-[.88rem] opacity-80 hover:opacity-100 hover:underline underline-offset-4">
+                    {h.label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h4 className="font-semibold text-white mb-4">Get In Touch</h4>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <Mail className="w-4 h-4 text-primary-400 mt-0.5 flex-shrink-0" />
-                <a href="mailto:hello@avansaspublishers.com" className="text-sm text-gray-400 hover:text-white transition-colors">
-                  hello@avansaspublishers.com
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <Phone className="w-4 h-4 text-primary-400 mt-0.5 flex-shrink-0" />
-                <a href="tel:+18005551234" className="text-sm text-gray-400 hover:text-white transition-colors">
-                  +1 (800) 555-1234
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-primary-400 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-400">New York, NY 10001, USA</span>
-              </li>
-            </ul>
-            <Link to="/consultation" className="btn-primary text-sm py-2.5 mt-6 w-full text-center block">
-              Book Free Consultation
-            </Link>
+            <h4 className="lbl mb-4 opacity-55" style={{ fontSize: '.72rem' }}>Contact</h4>
+            <div className="text-[.88rem] opacity-80 leading-[1.75]">
+              <span className="select-all">hello@avansaspublishers.com</span><br />
+              <span className="select-all">+1 (800) 555-1234</span><br />
+              Mon–Fri, 9–19 EST
+            </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-dark-600 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-          <p>© {new Date().getFullYear()} Avansas Publishers. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link to="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
-            <Link to="/terms"   className="hover:text-gray-300 transition-colors">Terms of Service</Link>
-            <Link to="/refund"  className="hover:text-gray-300 transition-colors">Refund Policy</Link>
-          </div>
+        <div
+          className="flex flex-wrap justify-between gap-3.5 pt-5 lbl opacity-55"
+          style={{ borderTop: '1px solid rgba(255,255,255,.16)', fontSize: '.74rem' }}
+        >
+          <span>© {new Date().getFullYear()} Avansas Publishers</span>
+          <span className="flex gap-5 flex-wrap">
+            <Link to="/contact">Privacy</Link>
+            <Link to="/contact">Terms</Link>
+            <Link to="/contact">Refunds</Link>
+          </span>
         </div>
       </div>
     </footer>

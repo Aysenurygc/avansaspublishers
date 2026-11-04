@@ -1,93 +1,71 @@
 import { useState } from 'react'
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
 import toast from 'react-hot-toast'
+import PageHead from '@/components/layout/PageHead'
+import Field from '@/components/ui/Field'
+import { contact } from '@/lib/api'
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
-  const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    await new Promise(r => setTimeout(r, 1000))
-    toast.success("Message sent! We'll be in touch within 24 hours.")
-    setForm({ name: '', email: '', subject: '', message: '' })
-    setLoading(false)
+    setSending(true)
+    try {
+      await contact.send(form)
+      toast.success('Sent. We reply within one working day.')
+      setForm({ name: '', email: '', subject: '', message: '' })
+    } catch {
+      toast.error('That did not send. Email us directly at hello@avansaspublishers.com.')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
-    <div className="pt-24">
-      <section className="section-padding bg-dark-800 border-b border-dark-600">
-        <div className="container-max text-center">
-          <p className="text-primary-400 font-semibold uppercase tracking-widest text-sm mb-3">Get In Touch</p>
-          <h1 className="section-title mb-4">We'd Love to Hear About Your Book</h1>
-          <p className="section-subtitle mx-auto">Our publishing consultants typically respond within 2 business hours.</p>
-        </div>
-      </section>
+    <>
+      <PageHead
+        n="08"
+        title="Get in touch"
+        sub="Tell us about the book. We read everything that arrives and reply within one working day."
+      />
 
-      <section className="section-padding bg-dark-900">
-        <div className="container-max grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Contact info */}
-          <div className="space-y-6">
-            {[
-              { icon: Mail,  label: 'Email',   value: 'hello@avansaspublishers.com', href: 'mailto:hello@avansaspublishers.com' },
-              { icon: Phone, label: 'Phone',   value: '+1 (800) 555-1234',           href: 'tel:+18005551234' },
-              { icon: MapPin,label: 'Address', value: '123 Publishing Lane, New York, NY 10001', href: null },
-              { icon: Clock, label: 'Hours',   value: 'Mon–Fri: 9AM–7PM EST\nSat: 10AM–4PM EST', href: null },
-            ].map(item => (
-              <div key={item.label} className="card-dark flex items-start gap-4">
-                <div className="w-10 h-10 bg-primary-900/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <item.icon className="w-5 h-5 text-primary-400" />
+      <section className="pb-20">
+        <div className="wrap grid gap-12 grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+          <div>
+            <div style={{ borderTop: '2px solid var(--ink)' }}>
+              {[
+                { k: 'Email', v: 'hello@avansaspublishers.com' },
+                { k: 'Phone', v: '+1 (800) 555-1234' },
+                { k: 'Hours', v: 'Mon–Fri, 9–19 EST' },
+                { k: 'Post',  v: 'New York, NY 10001' },
+              ].map(r => (
+                <div key={r.k} className="grid grid-cols-[72px_1fr] gap-4 py-3.5 hair-b items-baseline">
+                  <span className="lbl text-muted" style={{ fontSize: '.66rem' }}>{r.k}</span>
+                  <span className="text-[.93rem] select-all">{r.v}</span>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-0.5">{item.label}</div>
-                  {item.href ? (
-                    <a href={item.href} className="text-white hover:text-primary-400 transition-colors text-sm">{item.value}</a>
-                  ) : (
-                    <div className="text-sm text-white whitespace-pre-line">{item.value}</div>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <p className="text-muted text-[.88rem] leading-[1.55] mt-6 max-w-[40ch]">
+              Sending a manuscript? Attach it to an email. We will tell you plainly whether we are
+              the right house for it.
+            </p>
           </div>
 
-          {/* Contact form */}
-          <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="card-dark space-y-5">
-              <h2 className="font-serif text-2xl font-bold text-white mb-2">Send Us a Message</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1.5">Full Name</label>
-                  <input type="text" required value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                    className="w-full bg-dark-700 border border-dark-500 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-primary-500 transition-colors"
-                    placeholder="Your name" />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1.5">Email Address</label>
-                  <input type="email" required value={form.email} onChange={e => setForm({...form, email: e.target.value})}
-                    className="w-full bg-dark-700 border border-dark-500 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-primary-500 transition-colors"
-                    placeholder="your@email.com" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1.5">Subject</label>
-                <input type="text" required value={form.subject} onChange={e => setForm({...form, subject: e.target.value})}
-                  className="w-full bg-dark-700 border border-dark-500 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder="How can we help?" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1.5">Message</label>
-                <textarea required rows={5} value={form.message} onChange={e => setForm({...form, message: e.target.value})}
-                  className="w-full bg-dark-700 border border-dark-500 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-primary-500 transition-colors resize-none"
-                  placeholder="Tell us about your book project..." />
-              </div>
-              <button type="submit" disabled={loading} className="btn-primary w-full">
-                {loading ? 'Sending...' : <><Send className="w-4 h-4" /> Send Message</>}
-              </button>
-            </form>
-          </div>
+          <form onSubmit={submit} className="flex flex-col gap-5 p-6 sm:p-8" style={{ border: '2px solid var(--ink)' }}>
+            <h2 className="text-[1.5rem]">Send a message</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <Field id="c-name"  label="Name"    value={form.name}  onChange={v => setForm({ ...form, name: v })}  required placeholder="Your name" />
+              <Field id="c-email" label="Email"   type="email" value={form.email} onChange={v => setForm({ ...form, email: v })} required placeholder="you@example.com" />
+            </div>
+            <Field id="c-subject" label="Subject" value={form.subject} onChange={v => setForm({ ...form, subject: v })} required placeholder="What is this about?" />
+            <Field id="c-message" label="Message" value={form.message} onChange={v => setForm({ ...form, message: v })} required rows={6} placeholder="Tell us about the book." />
+            <button type="submit" disabled={sending} className="btn disabled:opacity-50">
+              {sending ? 'Sending…' : 'Send'}
+            </button>
+          </form>
         </div>
       </section>
-    </div>
+    </>
   )
 }

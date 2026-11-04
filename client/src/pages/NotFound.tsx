@@ -1,17 +1,28 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import Spine from '@/components/ui/Spine'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center section-padding text-center">
-      <div>
-        <div className="text-9xl font-serif font-bold text-dark-600 mb-4">404</div>
-        <h1 className="text-3xl font-serif font-bold text-white mb-4">Page Not Found</h1>
-        <p className="text-gray-400 mb-8">The page you're looking for doesn't exist or has been moved.</p>
-        <Link to="/" className="btn-primary inline-flex">
-          <ArrowLeft className="w-4 h-4" /> Back to Home
-        </Link>
+    <section className="band">
+      <div className="wrap grid gap-12 items-end grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+        <div>
+          <div className="sh">
+            <span className="n num">404</span>
+            <h1>This one is not on the shelf.</h1>
+            <p className="sub">The page does not exist, or it moved. Everything else is where you left it.</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link to="/" className="btn">Back to the house</Link>
+            <Link to="/portfolio" className="btn-o">See the books</Link>
+          </div>
+        </div>
+
+        <div className="flex items-end gap-[5px]" aria-hidden="true">
+          <Spine width={34} height={210} tone="light" />
+          <Spine width={26} height={172} tone="dark" />
+          <Spine width={40} height={238} tone="light" />
+        </div>
       </div>
-    </div>
+    </section>
   )
 }
