@@ -4,7 +4,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import dotenv from 'dotenv'
 import rateLimit from 'express-rate-limit'
-import mongoose from 'mongoose'
+import prisma from './lib/prisma.js'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { existsSync } from 'fs'
@@ -43,8 +43,15 @@ app.use('/api/blog',          blogRoutes)
 app.use('/api/contact',       contactRoutes)
 app.use('/api/orders',        orderRoutes)
 
-// Health check
-app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date() }))
+// Health check — reports database connectivity alongside process health
+app.get('/api/health', async (_req, res) => {
+  let database = 'disconnected'
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    database = 'connected'
+  } catch { /* leave as disconnected */ }
+  res.json({ status: 'ok', database, timestamp: new Date() })
+})
 
 // Serve React frontend in production
 const clientDist = join(__dirname, '../../client/dist')
@@ -59,17 +66,19 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' })
 })
 
-// DB connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/avansaspublishers')
-    console.log('MongoDB connected')
-  } catch (err) {
-    console.error('MongoDB connection error:', err)
-  }
-}
+const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 
-connectDB()
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+prisma.$connect()
+  .then(() => console.log('PostgreSQL connected'))
+  .catch(err => console.error('PostgreSQL connection error:', err.message))
+
+const shutdown = async (signal) => {
+  console.log(`${signal} received, shutting down`)
+  server.close()
+  await prisma.$disconnect()
+  process.exit(0)
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT',  () => shutdown('SIGINT'))
 
 export default app
