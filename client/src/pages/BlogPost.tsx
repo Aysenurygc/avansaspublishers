@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Clock, Calendar } from 'lucide-react'
 
 export default function BlogPost() {
-  const { slug } = useParams()
+  const { slug: _slug } = useParams()
 
   return (
     <div className="pt-24">

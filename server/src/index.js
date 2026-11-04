@@ -5,6 +5,11 @@ import morgan from 'morgan'
 import dotenv from 'dotenv'
 import rateLimit from 'express-rate-limit'
 import mongoose from 'mongoose'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import { existsSync } from 'fs'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 import authRoutes       from './routes/auth.js'
 import projectRoutes    from './routes/projects.js'
@@ -40,6 +45,13 @@ app.use('/api/orders',        orderRoutes)
 
 // Health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date() }))
+
+// Serve React frontend in production
+const clientDist = join(__dirname, '../../client/dist')
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist))
+  app.get('*', (_req, res) => res.sendFile(join(clientDist, 'index.html')))
+}
 
 // Error handler
 app.use((err, _req, res, _next) => {
