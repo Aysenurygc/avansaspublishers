@@ -24,6 +24,10 @@ dotenv.config()
 const app  = express()
 const PORT = process.env.PORT || 5000
 
+// Railway terminates TLS at its edge proxy, so req.ip must come from
+// X-Forwarded-For or express-rate-limit rejects every request.
+app.set('trust proxy', 1)
+
 // Security & logging
 app.use(helmet())
 app.use(morgan('dev'))
