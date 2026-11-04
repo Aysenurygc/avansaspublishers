@@ -161,6 +161,25 @@ model Consultation {
   @@index([email])
 }
 
+/// A visitor who completed a lead-magnet tool and gave an address.
+/// `consent` records an explicit marketing opt-in rather than inferring one
+/// from the submission, because the house also sells into the UK, Canada,
+/// Australia and New Zealand, where inferred consent is not sufficient.
+model Lead {
+  id        String   @id @default(uuid())
+  email     String
+  name      String?
+  source    String
+  result    Json?
+  consent   Boolean  @default(false)
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([source])
+  @@index([email])
+  @@index([createdAt])
+}
+
 model BlogPost {
   id          String    @id @default(uuid())
   title       String

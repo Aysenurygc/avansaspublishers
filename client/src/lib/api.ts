@@ -51,3 +51,20 @@ export const contact = {
   send: (data: { name: string; email: string; subject: string; message: string }) =>
     api.post('/contact', data).then(r => r.data),
 }
+
+export type LeadSource =
+  | 'book-readiness-scorecard'
+  | 'is-it-a-book'
+  | 'opening-pages-appraisal'
+  | 'memoir-story-mapper'
+  | 'scope-cost-estimator'
+
+export const leads = {
+  submit: (data: {
+    email: string
+    name?: string
+    source: LeadSource
+    result?: unknown
+    consent: boolean
+  }) => api.post('/leads', data).then(r => r.data),
+}

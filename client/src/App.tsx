@@ -19,6 +19,11 @@ const Dashboard     = lazy(() => import('@/pages/Dashboard'))
 const Login         = lazy(() => import('@/pages/Login'))
 const Register      = lazy(() => import('@/pages/Register'))
 const NotFound      = lazy(() => import('@/pages/NotFound'))
+const ToolsIndex    = lazy(() => import('@/pages/tools/ToolsIndex'))
+const Readiness     = lazy(() => import('@/pages/tools/ReadinessScorecard'))
+const IsItABook     = lazy(() => import('@/pages/tools/IsItABook'))
+const OpeningPages  = lazy(() => import('@/pages/tools/OpeningPages'))
+const MemoirMapper  = lazy(() => import('@/pages/tools/MemoirMapper'))
 
 export default function App() {
   return (
@@ -45,6 +50,11 @@ export default function App() {
               <Route path="/dashboard"      element={<Dashboard />} />
               <Route path="/login"          element={<Login />} />
               <Route path="/register"       element={<Register />} />
+              <Route path="/tools"               element={<ToolsIndex />} />
+              <Route path="/tools/readiness"     element={<Readiness />} />
+              <Route path="/tools/is-it-a-book"  element={<IsItABook />} />
+              <Route path="/tools/opening-pages" element={<OpeningPages />} />
+              <Route path="/tools/memoir-map"    element={<MemoirMapper />} />
               <Route path="*"               element={<NotFound />} />
             </Routes>
           </Suspense>

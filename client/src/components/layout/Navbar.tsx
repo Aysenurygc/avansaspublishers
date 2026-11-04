@@ -8,6 +8,7 @@ const links = [
   { to: '/portfolio', label: 'Books' },
   { to: '/about',     label: 'House' },
   { to: '/blog',      label: 'Journal' },
+  { to: '/tools',     label: 'Tools' },
 ]
 
 export default function Navbar() {

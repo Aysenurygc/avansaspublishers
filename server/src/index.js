@@ -18,6 +18,7 @@ import consultationRoutes from './routes/consultations.js'
 import blogRoutes       from './routes/blog.js'
 import contactRoutes    from './routes/contact.js'
 import orderRoutes      from './routes/orders.js'
+import leadRoutes       from './routes/leads.js'
 
 dotenv.config()
 
@@ -46,6 +47,7 @@ app.use('/api/consultations', consultationRoutes)
 app.use('/api/blog',          blogRoutes)
 app.use('/api/contact',       contactRoutes)
 app.use('/api/orders',        orderRoutes)
+app.use('/api/leads',         leadRoutes)
 
 // Health check — reports database connectivity alongside process health
 app.get('/api/health', async (_req, res) => {
