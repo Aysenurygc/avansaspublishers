@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PageHead from '@/components/layout/PageHead'
 import Field from '@/components/ui/Field'
 import LeadGate from '@/components/ui/LeadGate'
+import CallMe from '@/components/ui/CallMe'
 import { BackToTools } from './shared'
 
 /*
@@ -334,6 +335,15 @@ export default function OpeningPages() {
                 heading="Keep the read-back"
                 blurb="The numbers and notes above, sent as one page. Only the numbers are sent, not your text. If you want an editor’s judgement on the pages themselves, that is a separate conversation, and a person has it."
                 cta="Send the numbers"
+              />
+
+              {/* Somebody who pasted 500 words of their own opening has a
+                  manuscript, not an idea. That is the call worth making.
+                  Only the word count travels, never the text. */}
+              <CallMe
+                from="opening-pages-appraisal"
+                hotReason={r.words >= 500 ? `Has ${r.words} words of opening pages written` : undefined}
+                result={{ words: r.words, avgSentence: Number(r.avgSent.toFixed(1)) }}
               />
             </div>
           )}

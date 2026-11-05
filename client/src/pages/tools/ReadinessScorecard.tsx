@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHead from '@/components/layout/PageHead'
 import LeadGate from '@/components/ui/LeadGate'
+import CallMe from '@/components/ui/CallMe'
 import { Choice, StepRule, Meter, BackToTools } from './shared'
 
 type Area = 'Idea' | 'Reader' | 'Platform' | 'Material' | 'Time' | 'Budget'
@@ -348,6 +349,19 @@ export default function ReadinessScorecard() {
                 heading="Keep a written copy"
                 blurb="The verdict, the scores by area and the notes above, sent as one page you can come back to in three months. If an editor reads it and has something to add, they will write. Otherwise, nothing."
                 cta="Send the scorecard"
+              />
+
+              {/* A book the scorecard says is ready or nearly ready is worth a
+                  call today. A "not yet" is not, and is not flagged as one:
+                  the whole point of the verdict is that it can say no. */}
+              <CallMe
+                from="book-readiness-scorecard"
+                hotReason={
+                  r.verdict === 'ready' || r.verdict === 'nearly'
+                    ? `Scorecard: ${r.verdict}, ${r.total}/${r.max}`
+                    : undefined
+                }
+                result={{ verdict: r.verdict, score: r.total, max: r.max }}
               />
             </div>
           )}

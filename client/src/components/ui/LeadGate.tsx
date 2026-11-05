@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import Field from './Field'
+import { useWording } from './PhoneField'
 import { leads, type LeadSource } from '@/lib/api'
+import { attribution } from '@/lib/capture'
 
 type Props = {
   source: LeadSource
@@ -23,8 +25,10 @@ type Props = {
  * written version and nothing more.
  */
 export default function LeadGate({ source, result, heading, blurb, cta = 'Send it', onSent }: Props) {
+  const w = useWording()
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
+  const [company, setCompany] = useState('')
   const [consent, setConsent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
@@ -33,11 +37,22 @@ export default function LeadGate({ source, result, heading, blurb, cta = 'Send i
     e.preventDefault()
     setBusy(true)
     try {
-      await leads.submit({ email, name: name || undefined, source, result, consent })
+      await leads.submit({
+        email,
+        name: name || undefined,
+        source,
+        result,
+        consent,
+        attribution: attribution(),
+        company,
+      })
       setDone(true)
       onSent?.()
-    } catch {
-      toast.error('That did not send. Email hello@avansaspublishers.com and we will pick it up.')
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        'That did not send. Email hello@avansaspublishers.com and we will pick it up.'
+      toast.error(msg)
     } finally {
       setBusy(false)
     }
@@ -46,30 +61,52 @@ export default function LeadGate({ source, result, heading, blurb, cta = 'Send i
   if (done) {
     return (
       <div className="p-6 sm:p-7 inv">
-        <h3 className="text-[1.3rem] mb-2">On its way.</h3>
+        <h3 className="text-[1.3rem] mb-2">Noted.</h3>
         <p className="inv-muted text-[.93rem] max-w-[46ch]">
-          Check {email}. If an editor thinks there is something here, you will hear from a person,
-          not a sequence.
+          {w?.emailConfirmation ??
+            'We have it. An editor reads these — if there is something here, you will hear from a person, not a sequence.'}
         </p>
       </div>
     )
   }
 
   return (
-    <form onSubmit={submit} className="p-6 sm:p-7 flex flex-col gap-5" style={{ border: '2px solid var(--ink)' }}>
+    <form
+      onSubmit={submit}
+      action="/api/inbound"
+      method="post"
+      className="p-6 sm:p-7 flex flex-col gap-5"
+      style={{ border: '2px solid var(--ink)' }}
+    >
+      <input type="hidden" name="source" value={source} />
       <div>
         <h3 className="text-[1.3rem] mb-2">{heading}</h3>
         <p className="text-muted text-[.93rem] max-w-[52ch]">{blurb}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <Field id={`${source}-name`}  label="Name (optional)" value={name}  onChange={setName}  placeholder="Your name" />
-        <Field id={`${source}-email`} label="Email" type="email" value={email} onChange={setEmail} required placeholder="you@example.com" />
+        <Field id={`${source}-name`}  name="name"  label="Name (optional)" value={name}  onChange={setName}  placeholder="Your name" autoComplete="name" />
+        <Field id={`${source}-email`} name="email" label="Email" type="email" value={email} onChange={setEmail} required placeholder="you@example.com" autoComplete="email" />
+      </div>
+
+      {/* Hidden from people and from screen readers, so only a bot fills it. */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px' }}>
+        <label htmlFor={`${source}-company`}>Company</label>
+        <input
+          id={`${source}-company`}
+          name="company"
+          tabIndex={-1}
+          autoComplete="off"
+          value={company}
+          onChange={e => setCompany(e.target.value)}
+        />
       </div>
 
       <label htmlFor={`${source}-consent`} className="flex items-start gap-3 cursor-pointer">
         <input
           id={`${source}-consent`}
+          name="consent"
+          value="true"
           type="checkbox"
           checked={consent}
           onChange={e => setConsent(e.target.checked)}

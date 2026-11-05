@@ -19,6 +19,8 @@ import blogRoutes       from './routes/blog.js'
 import contactRoutes    from './routes/contact.js'
 import orderRoutes      from './routes/orders.js'
 import leadRoutes       from './routes/leads.js'
+import inboundRoutes    from './routes/inbound.js'
+import discoveryRoutes, { previewing } from './routes/discovery.js'
 
 dotenv.config()
 
@@ -48,6 +50,7 @@ app.use('/api/blog',          blogRoutes)
 app.use('/api/contact',       contactRoutes)
 app.use('/api/orders',        orderRoutes)
 app.use('/api/leads',         leadRoutes)
+app.use('/api/inbound',       inboundRoutes)
 
 // Health check — reports database connectivity alongside process health
 app.get('/api/health', async (_req, res) => {
@@ -58,6 +61,22 @@ app.get('/api/health', async (_req, res) => {
   } catch { /* leave as disconnected */ }
   res.json({ status: 'ok', database, timestamp: new Date() })
 })
+
+// While PREVIEW_MODE is on, every response carries noindex. robots.txt alone
+// does not stop a page that was reached by a link from being indexed; the
+// header does, so both are set.
+if (previewing()) {
+  console.log('PREVIEW_MODE on — serving noindex on every response')
+  app.use((_req, res, next) => {
+    res.set('X-Robots-Tag', 'noindex, nofollow')
+    next()
+  })
+}
+
+// robots.txt, sitemap.xml and llms.txt, generated from the real route list.
+// Registered before the static handler so a stale file in client/dist cannot
+// shadow them.
+app.use('/', discoveryRoutes)
 
 // Serve React frontend in production
 const clientDist = join(__dirname, '../../client/dist')

@@ -24,6 +24,9 @@ const Readiness     = lazy(() => import('@/pages/tools/ReadinessScorecard'))
 const IsItABook     = lazy(() => import('@/pages/tools/IsItABook'))
 const OpeningPages  = lazy(() => import('@/pages/tools/OpeningPages'))
 const MemoirMapper  = lazy(() => import('@/pages/tools/MemoirMapper'))
+const Thanks        = lazy(() => import('@/pages/Thanks'))
+const LeadHQ        = lazy(() => import('@/pages/hq/LeadHQ'))
+const LeadDetail    = lazy(() => import('@/pages/hq/LeadDetail'))
 
 export default function App() {
   return (
@@ -55,6 +58,11 @@ export default function App() {
               <Route path="/tools/is-it-a-book"  element={<IsItABook />} />
               <Route path="/tools/opening-pages" element={<OpeningPages />} />
               <Route path="/tools/memoir-map"    element={<MemoirMapper />} />
+              {/* Where a form posted without JavaScript lands. */}
+              <Route path="/thanks"         element={<Thanks />} />
+              {/* Admin-only; the API refuses and the page says so. */}
+              <Route path="/hq"             element={<LeadHQ />} />
+              <Route path="/hq/lead/:id"    element={<LeadDetail />} />
               <Route path="*"               element={<NotFound />} />
             </Routes>
           </Suspense>

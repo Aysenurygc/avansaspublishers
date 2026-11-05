@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PageHead from '@/components/layout/PageHead'
 import Field from '@/components/ui/Field'
 import LeadGate from '@/components/ui/LeadGate'
+import CallMe from '@/components/ui/CallMe'
 import { Choice, StepRule, Meter, BackToTools } from './shared'
 
 type Kind = 'Period' | 'Turning point' | 'Person' | 'Place'
@@ -377,6 +378,18 @@ export default function MemoirMapper() {
                   ? 'The entries, the arc and the notes, written out as one page you can take into the first conversation with them. If an editor thinks there is a book here, they will write.'
                   : 'The entries, the arc and the notes, written out as one page to add to as more comes back. If an editor thinks there is a book here, they will write.'}
                 cta="Send the map"
+              />
+
+              {/* Five remembered moments is someone who has done the work of
+                  remembering. Two is someone having a look around. */}
+              <CallMe
+                from="memoir-story-mapper"
+                hotReason={
+                  entries.length >= 5
+                    ? `Mapped ${entries.length} moments into ${arc.chapters.length} chapters${onBehalf ? ", for someone else's story" : ''}`
+                    : undefined
+                }
+                result={{ entries: entries.length, chapters: arc.chapters.length, forSomeoneElse: onBehalf }}
               />
 
               <p className="text-muted text-[.9rem] max-w-[60ch]">

@@ -10,6 +10,7 @@
     "postinstall": "prisma generate",
     "migrate": "node prisma/repair.js && prisma migrate deploy",
     "migrate:dev": "prisma migrate dev",
+    "check": "node scripts/check_lead_pipeline.mjs",
     "studio": "prisma studio"
   },
   "prisma": {

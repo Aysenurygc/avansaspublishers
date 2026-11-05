@@ -7,11 +7,18 @@ type Props = {
   placeholder?: string
   required?: boolean
   rows?: number
+  /** Needed wherever the surrounding form must still submit without JavaScript. */
+  name?: string
+  autoComplete?: string
 }
 
-export default function Field({ id, label, type = 'text', value, onChange, placeholder, required, rows }: Props) {
+export default function Field({
+  id, label, type = 'text', value, onChange, placeholder, required, rows, name, autoComplete,
+}: Props) {
   const shared = {
     id,
+    name: name ?? id,
+    autoComplete,
     value,
     required,
     placeholder,

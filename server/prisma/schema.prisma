@@ -161,23 +161,102 @@ model Consultation {
   @@index([email])
 }
 
-/// A visitor who completed a lead-magnet tool and gave an address.
+enum LeadStatus {
+  NEW
+  CONTACTED
+  BOOKED
+  WON
+  LOST
+  JUNK
+}
+
+/// Someone who asked us for something: a tool result in writing, a call back,
+/// a consultation. One row per person, with `LeadEvent` holding the timeline.
+///
 /// `consent` records an explicit marketing opt-in rather than inferring one
 /// from the submission, because the house also sells into the UK, Canada,
 /// Australia and New Zealand, where inferred consent is not sufficient.
+///
+/// `email` and `phone` are both optional and the intake requires at least one
+/// of them: a phone-first form has no address to store, and a tool that only
+/// emails a result has no number.
+///
+/// No IP address is stored. Abuse is handled by the rate limiter in front of
+/// the route, which needs no record kept, so keeping one would mean holding
+/// personal data this system never reads.
 model Lead {
-  id        String   @id @default(uuid())
-  email     String
-  name      String?
-  source    String
-  result    Json?
-  consent   Boolean  @default(false)
+  id String @id @default(uuid())
+
+  // Who they are
+  name    String?
+  email   String?
+  /// Country code and number already joined, so it can be dialled as stored.
+  phone   String?
+  /// Kept separately so HQ can show the dial code it was given.
+  phoneCc String?
+
+  // What they asked for
+  source   String
+  /// Decides the score and how HQ reads the row. See lib/leads/scoring.js.
+  formType String
+  message  String?
+  result   Json?
+  segment  String?
+
+  // How hot
+  score Int     @default(50)
+  hot   Boolean @default(false)
+
+  consent Boolean @default(false)
+
+  // First touch, stamped once on the first lead and never overwritten after.
+  landingPath String?
+  referrer    String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+  visitorId   String?
+
+  // Handling
+  status      LeadStatus @default(NEW)
+  outcome     String?
+  contactedAt DateTime?
+  followUpAt  DateTime?
+  assignedTo  String?
+
   userAgent String?
   createdAt DateTime @default(now())
+  /// Carries a database default as well, so the column can be added to a
+  /// table that already holds rows.
+  updatedAt DateTime @default(now()) @updatedAt
+
+  events LeadEvent[]
 
   @@index([source])
   @@index([email])
+  @@index([phone])
   @@index([createdAt])
+  @@index([formType])
+  @@index([status, hot, createdAt])
+}
+
+/// Everything that has happened to a lead, so whoever picks up the phone can
+/// see what was already said rather than starting the conversation again.
+model LeadEvent {
+  id     String @id @default(uuid())
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  /// created | repeat | alert_sent | alert_skipped | status | note | assigned
+  kind      String
+  detail    String?
+  /// A user id, or "system" when the pipeline wrote it.
+  actor     String?
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
 }
 
 model BlogPost {

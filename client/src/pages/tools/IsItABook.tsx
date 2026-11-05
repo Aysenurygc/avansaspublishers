@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHead from '@/components/layout/PageHead'
 import LeadGate from '@/components/ui/LeadGate'
+import CallMe from '@/components/ui/CallMe'
 import { Choice, StepRule, BackToTools } from './shared'
 
 type Form = 'book' | 'series' | 'talk' | 'article' | 'notyet'
@@ -245,6 +246,18 @@ export default function IsItABook() {
                 heading="Keep the reasoning"
                 blurb="The answer and the reasons for it, written out, so you can test the idea against them later. No sequence follows. If an editor has a view worth sending, it comes from them."
                 cta="Send it"
+              />
+
+              {/* Only a book or a series is a call for this house. An article
+                  or a talk is a real answer, and it is not our work. */}
+              <CallMe
+                from="is-it-a-book"
+                hotReason={
+                  r.winner === 'book' || r.winner === 'series'
+                    ? `Triage says: ${r.winner}`
+                    : undefined
+                }
+                result={{ form: r.winner, runnerUp: r.runner }}
               />
             </div>
           )}
