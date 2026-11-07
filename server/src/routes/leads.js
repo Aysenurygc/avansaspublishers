@@ -58,7 +58,13 @@ function present(lead) {
     summary: describe(lead),
     sourceLine: describeSource(lead),
     hotReason: hotReason(lead),
-    said: plainMessage(lead),
+    // Only words the visitor actually typed. A callback carries a message
+    // this site composed ("Asked for a call from …", or the tool's own HOT
+    // reason), and HQ shows `said` as a quotation — so passing it through
+    // would have the caller read the house's own sentence back to the person
+    // as if they had said it. The rule lives here rather than in the page,
+    // because the server is the only thing that knows who wrote the field.
+    said: lead.formType === 'call_now' ? null : plainMessage(lead),
     waitingMinutes:
       lead.status === 'NEW'
         ? Math.floor((Date.now() - new Date(lead.createdAt).getTime()) / 60000)

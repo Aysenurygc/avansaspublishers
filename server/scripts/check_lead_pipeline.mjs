@@ -236,6 +236,28 @@ for (const code of ['unknown-source', 'bad-email', 'bad-phone', 'no-contact', 'c
   ok(`/thanks has copy for the code "${code}"`, new RegExp(`['"]?${code}['"]?\\s*:`).test(thanks))
 }
 
+/* --------------------------- HQ quotes only the visitor's own words ------ */
+
+const hqRoute = readFileSync(join(root, 'server/src/routes/leads.js'), 'utf8')
+ok(
+  'a callback never reports house-written text as what the visitor said',
+  /said:\s*lead\.formType === 'call_now' \? null : plainMessage\(lead\)/.test(hqRoute),
+  'CallMe composes the message itself, so passing it through as `said` makes the caller quote us back to them'
+)
+
+const detail = readFileSync(join(root, 'client/src/pages/hq/LeadDetail.tsx'), 'utf8')
+ok('the lead page keeps the exact consent warning', detail.includes('No marketing opt-in — reply about this request only.'))
+ok('the lead page keeps one-tap calling', /href=\{`tel:/.test(detail) && /href=\{`sms:/.test(detail) && /wa\.me/.test(detail))
+
+const hqPage = readFileSync(join(root, 'client/src/pages/hq/LeadHQ.tsx'), 'utf8')
+ok('HQ refuses to render anything on 401 or 403', /if \(denied\) return <Denied \/>/.test(hqPage))
+ok('the inbox search stays debounced', /setTimeout\([\s\S]{0,120}?,\s*250\)/.test(hqPage) && /clearTimeout/.test(hqPage))
+ok('insights still says why it shows counts and not rates', /noise/.test(hqPage))
+
+for (const page of [hqPage, detail]) {
+  ok('no class name is built by concatenation in HQ', !/className=[{]?`[^`]*[$][{]/.test(page))
+}
+
 /* ------------------------------------------------------------------ report */
 
 console.log(`\n${pass} checks passed`)

@@ -1,65 +1,146 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHead from '@/components/layout/PageHead'
+import Colophon from '@/components/ui/Colophon'
 import { hq, type HQLead } from '@/lib/api'
+import { Denied, HotMark, STATUSES, Wait, display, dueDay, fieldClass } from './shared'
 
 type Tab = 'today' | 'inbox' | 'insights'
 
-const STATUSES = ['NEW', 'CONTACTED', 'BOOKED', 'WON', 'LOST', 'JUNK'] as const
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'today', label: 'Today' },
+  { id: 'inbox', label: 'Inbox' },
+  { id: 'insights', label: 'Insights' },
+]
 
-/** How long someone has been waiting, in the words a person would use. */
-function waited(minutes: number | null): string {
-  if (minutes == null) return ''
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes} min`
-  const h = Math.floor(minutes / 60)
-  if (h < 24) return `${h}h ${minutes % 60}m`
-  const d = Math.floor(h / 24)
-  return `${d}d ${h % 24}h`
+/** What the server returns at most (routes/leads.js `take`). A full list may be longer. */
+const HOT_CAP = 100
+const FOLLOW_UP_CAP = 50
+
+/** The small line under every lead: where from, the number, and the consent flag. */
+function Provenance({ lead }: { lead: HQLead }) {
+  return (
+    <p className="text-muted text-[.76rem] leading-[1.5] mt-1.5 [overflow-wrap:anywhere]">
+      {lead.sourceLine}
+      {lead.phoneDisplay && (
+        <>
+          {' · '}
+          <span className="num">{lead.phoneDisplay}</span>
+        </>
+      )}
+      {!lead.consent && <span className="text-ink"> · no marketing opt-in</span>}
+    </p>
+  )
 }
 
 /**
- * Speed-to-lead, shown as a word rather than a colour alone: the row says
- * "cold" next to the timer so it reads the same to someone who cannot
- * distinguish the two shades.
+ * One lead in a list. The left figure is its place in the list, not its
+ * score: in a queue the number that matters is "who is next".
  */
-function temperature(minutes: number | null): string | null {
-  if (minutes == null) return null
-  if (minutes < 15) return 'fresh'
-  if (minutes < 120) return 'cooling'
-  return 'cold'
+function LeadRow({ lead, n, due = false }: { lead: HQLead; n: number; due?: boolean }) {
+  return (
+    <div className="hair-b py-4 grid gap-x-4 sm:gap-x-6 gap-y-2 grid-cols-[2rem_minmax(0,1fr)] md:grid-cols-[3rem_minmax(0,1fr)_10.5rem] items-baseline">
+      <span className="num text-muted text-[.82rem]">{String(n).padStart(2, '0')}</span>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+          <h3 className="min-w-0 text-[1.3rem] sm:text-[1.45rem] [overflow-wrap:anywhere]">
+            <Link to={`/hq/lead/${lead.id}`} className="hover:opacity-80">{display(lead)}</Link>
+          </h3>
+          {lead.hot && <HotMark />}
+        </div>
+        <p className="text-[.9rem] leading-[1.5] [overflow-wrap:anywhere]">{lead.summary}</p>
+        <Provenance lead={lead} />
+      </div>
+      <div className="col-start-2 md:col-start-auto flex flex-wrap md:flex-col md:items-end gap-x-3 gap-y-1 items-baseline">
+        <span className="lbl text-muted text-[.66rem]">{lead.status}</span>
+        {due && lead.followUpAt && (
+          <span className="lbl text-ink text-[.66rem]">Due {dueDay(lead.followUpAt)}</span>
+        )}
+        <Wait minutes={lead.waitingMinutes} />
+        <span className="lbl text-muted text-[.66rem]">
+          Score <span className="num">{lead.score}</span>
+        </span>
+      </div>
+    </div>
+  )
 }
 
-function LeadRow({ lead }: { lead: HQLead }) {
-  const temp = temperature(lead.waitingMinutes)
+/** The oldest hot lead, drawn as a book on the desk: a dark spine and an open page. */
+function NextCall({ lead }: { lead: HQLead }) {
   return (
-    <div className="hair-b py-4 grid gap-x-5 gap-y-2 grid-cols-1 md:grid-cols-[3.5rem_minmax(0,1fr)_auto] items-baseline">
-      <span className="num text-muted">{lead.score}</span>
-      <div className="min-w-0">
-        <h3 className="text-[1.1rem] mb-1">
-          <Link to={`/hq/lead/${lead.id}`} className="hover:opacity-80">
-            {lead.name || lead.email || lead.phoneDisplay || 'No name given'}
-          </Link>
-          {lead.hot && (
-            <span className="lbl ml-3 px-1.5 py-0.5 align-middle" style={{ background: 'var(--ink)', color: 'var(--ground)', fontSize: '.6rem' }}>
-              Hot
-            </span>
-          )}
-        </h3>
-        <p className="text-muted text-[.88rem] leading-[1.5] break-words">{lead.summary}</p>
-        <p className="text-muted mt-1" style={{ fontSize: '.76rem' }}>
-          {lead.sourceLine}
-          {lead.phoneDisplay && ` · ${lead.phoneDisplay}`}
-          {!lead.consent && ' · no marketing opt-in'}
-        </p>
+    <article aria-labelledby="hq-next-name" className="flex border-2 border-ink mb-12">
+      <div aria-hidden="true" className="spine spine-dark w-[38px] sm:w-[48px]">
+        <span className="st">Call next</span>
+        <Colophon className="cx mt-auto" />
       </div>
-      <div className="md:text-right">
-        <span className="lbl text-muted block" style={{ fontSize: '.66rem' }}>{lead.status}</span>
-        {temp && (
-          <span className="lbl block mt-1" style={{ fontSize: '.66rem' }}>
-            {waited(lead.waitingMinutes)} · {temp}
-          </span>
+      <div className="min-w-0 flex-1 p-5 sm:p-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 mb-4">
+          <span className="lbl text-muted">Call next · waiting longest</span>
+          <Wait minutes={lead.waitingMinutes} big />
+        </div>
+        <h3 id="hq-next-name" className="text-[2rem] sm:text-[2.7rem] mb-4 [overflow-wrap:anywhere]">
+          <Link to={`/hq/lead/${lead.id}`} className="hover:opacity-80">{display(lead)}</Link>
+        </h3>
+        {lead.hotReason && (
+          <div className="mb-4 max-w-[56ch]">
+            <span className="lbl text-muted block mb-1.5 text-[.64rem]">Why this is hot</span>
+            <p className="text-[1.08rem] sm:text-[1.2rem] leading-[1.45] [overflow-wrap:anywhere]">{lead.hotReason}</p>
+          </div>
         )}
+        <p className="text-muted text-[.9rem] leading-[1.5] [overflow-wrap:anywhere]">{lead.summary}</p>
+        <Provenance lead={lead} />
+        <div className="mt-6 pt-5 border-t border-hairline flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+          <Link to={`/hq/lead/${lead.id}`} className="btn text-center">Read them, then call</Link>
+          <span className="lbl text-muted text-[.66rem]">
+            Score <span className="num">{lead.score}</span>
+          </span>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+/** One figure in the shift ledger. `cap` marks a list the server cut short. */
+function Figure({ value, label, cap }: { value: number; label: string; cap?: number }) {
+  return (
+    <div className="min-w-0 pt-3 border-t-2 border-ink">
+      <span className="num block text-[2rem] sm:text-[2.8rem] leading-none">
+        {value}
+        {cap != null && value >= cap && <span className="lbl text-muted text-[.62rem] ml-1.5">or more</span>}
+      </span>
+      <span className="lbl text-muted block mt-2 text-[.64rem] leading-[1.35]">{label}</span>
+    </div>
+  )
+}
+
+function SectionHead({ children, aside }: { children: React.ReactNode; aside?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mb-1">
+      <h2 className="lbl text-muted text-[.7rem]">{children}</h2>
+      {aside}
+    </div>
+  )
+}
+
+function Loading() {
+  return <p className="lbl text-muted py-6" role="status">Loading…</p>
+}
+
+/**
+ * A count with a bar drawn from the same count, against the largest row in
+ * its own list. Counts only: no rate, no trend, nothing the data cannot carry.
+ */
+function CountRow({ label, value, max, extra }: { label: string; value: number; max: number; extra?: string }) {
+  const pct = max > 0 ? (value / max) * 100 : 0
+  return (
+    <div className="hair-b py-3.5 grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 items-baseline">
+      <span className="text-[1rem] [overflow-wrap:anywhere]">{label}</span>
+      <span className="num text-[1.05rem] text-right">
+        {value}
+        {extra && <span className="lbl text-muted text-[.62rem] ml-2">{extra}</span>}
+      </span>
+      <div aria-hidden="true" className="col-span-2 mt-2 h-[5px] bg-hairline">
+        <div className="h-full bg-ink" style={{ width: `${pct}%` }} />
       </div>
     </div>
   )
@@ -68,6 +149,7 @@ function LeadRow({ lead }: { lead: HQLead }) {
 export default function LeadHQ() {
   const [tab, setTab] = useState<Tab>('today')
   const [denied, setDenied] = useState(false)
+  const tabRefs = useRef<Partial<Record<Tab, HTMLButtonElement | null>>>({})
 
   const [today, setToday] = useState<{ hot: HQLead[]; dueFollowUps: HQLead[]; waiting: number } | null>(null)
   const [inbox, setInbox] = useState<{ leads: HQLead[]; total: number } | null>(null)
@@ -95,24 +177,23 @@ export default function LeadHQ() {
     return () => clearTimeout(t)
   }, [tab, status, q])
 
-  if (denied) {
-    return (
-      <>
-        <PageHead n="—" title="Lead HQ" sub="Only the house can open this." />
-        <section className="pb-20">
-          <div className="wrap">
-            <div className="p-6" style={{ border: '2px solid var(--ink)' }}>
-              <h2 className="text-[1.3rem] mb-2">Sign in as an administrator</h2>
-              <p className="text-muted text-[.93rem] mb-5">
-                These rows are other people's names, numbers and unpublished books.
-              </p>
-              <Link to="/login" className="btn">Sign in</Link>
-            </div>
-          </div>
-        </section>
-      </>
-    )
+  /** Arrow keys move between tabs and select them; Home and End jump to the ends. */
+  const onTabKey = (e: React.KeyboardEvent, i: number) => {
+    let j: number
+    if (e.key === 'ArrowRight') j = (i + 1) % TABS.length
+    else if (e.key === 'ArrowLeft') j = (i - 1 + TABS.length) % TABS.length
+    else if (e.key === 'Home') j = 0
+    else if (e.key === 'End') j = TABS.length - 1
+    else return
+    e.preventDefault()
+    const next = TABS[j].id
+    setTab(next)
+    tabRefs.current[next]?.focus()
   }
+
+  if (denied) return <Denied />
+
+  const shiftDate = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
     <>
@@ -124,144 +205,187 @@ export default function LeadHQ() {
 
       <section className="pb-20">
         <div className="wrap">
-          <div className="flex gap-6 mb-8 rule-t pt-5" role="tablist" aria-label="Lead HQ sections">
-            {(['today', 'inbox', 'insights'] as Tab[]).map(t => (
+          <div className="flex gap-7 sm:gap-10 mb-10 rule-t pt-4" role="tablist" aria-label="Lead HQ sections">
+            {TABS.map((t, i) => (
               <button
-                key={t}
+                key={t.id}
+                ref={el => { tabRefs.current[t.id] = el }}
+                id={`hq-tab-${t.id}`}
+                type="button"
                 role="tab"
-                aria-selected={tab === t}
-                onClick={() => setTab(t)}
-                className="lbl pb-0.5 border-b-2"
-                style={{
-                  fontSize: '.74rem',
-                  borderColor: tab === t ? 'var(--ink)' : 'transparent',
-                  opacity: tab === t ? 1 : 0.6,
-                }}
+                aria-selected={tab === t.id}
+                aria-controls={`hq-panel-${t.id}`}
+                tabIndex={tab === t.id ? 0 : -1}
+                onClick={() => setTab(t.id)}
+                onKeyDown={e => onTabKey(e, i)}
+                className={
+                  tab === t.id
+                    ? 'd text-[1.35rem] sm:text-[1.6rem] pb-1.5 border-b-[3px] border-ink text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink'
+                    : 'd text-[1.35rem] sm:text-[1.6rem] pb-1.5 border-b-[3px] border-transparent text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink'
+                }
               >
-                {t === 'today' ? 'Today' : t === 'inbox' ? 'Inbox' : 'Insights'}
+                {t.label}
               </button>
             ))}
           </div>
 
-          {tab === 'today' && (
-            today === null ? <p className="lbl text-muted">Loading…</p> : (
+          {/* ------------------------------------------------------------ today */}
+          <div id="hq-panel-today" role="tabpanel" aria-labelledby="hq-tab-today" tabIndex={0} hidden={tab !== 'today'}>
+            {tab === 'today' && (today === null ? <Loading /> : (
               <>
-                <p className="text-muted text-[.9rem] mb-7 max-w-[60ch]">
-                  {today.waiting === 0
-                    ? 'Nobody is waiting.'
-                    : `${today.waiting} ${today.waiting === 1 ? 'person has' : 'people have'} asked for something and not been called yet. The oldest is first — it is the one about to go cold.`}
-                </p>
-
-                <h2 className="lbl text-muted mb-1" style={{ fontSize: '.7rem' }}>Call these first</h2>
-                <div className="rule-t mb-10">
-                  {today.hot.length === 0
-                    ? <p className="text-muted text-[.9rem] py-5">Nothing hot is waiting.</p>
-                    : today.hot.map(l => <LeadRow key={l.id} lead={l} />)}
+                <div className="mb-10">
+                  <span className="lbl text-muted block mb-4">The shift · {shiftDate}</span>
+                  <div className="grid grid-cols-3 gap-x-4 sm:gap-x-8 mb-6 max-w-[44rem]">
+                    <Figure value={today.hot.length} label="Hot, not yet called" cap={HOT_CAP} />
+                    <Figure value={today.dueFollowUps.length} label="Follow-ups due" cap={FOLLOW_UP_CAP} />
+                    <Figure value={today.waiting} label="New, all waiting" />
+                  </div>
+                  <p className="text-muted text-[.93rem] leading-[1.6] max-w-[60ch]">
+                    {today.waiting === 0
+                      ? 'Nobody is waiting.'
+                      : `${today.waiting} ${today.waiting === 1 ? 'person has' : 'people have'} asked for something and not been called yet. The oldest is first — it is the one about to go cold.`}
+                  </p>
                 </div>
 
-                <h2 className="lbl text-muted mb-1" style={{ fontSize: '.7rem' }}>Follow-ups due</h2>
+                {today.hot.length === 0 ? (
+                  <div className="rule-t py-6 mb-12">
+                    <p className="text-[1.05rem] mb-1">Nothing hot is waiting.</p>
+                    {today.waiting > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => { setStatus('NEW'); setTab('inbox') }}
+                        className="lbl text-muted underline decoration-1 underline-offset-4 hover:text-ink mt-2"
+                      >
+                        See the new leads in the inbox
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <NextCall lead={today.hot[0]} />
+                    {today.hot.length > 1 && (
+                      <div className="mb-12">
+                        <SectionHead>Then, in order</SectionHead>
+                        <div className="rule-t">
+                          {today.hot.slice(1).map((l, i) => <LeadRow key={l.id} lead={l} n={i + 2} />)}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <SectionHead>Follow-ups due</SectionHead>
                 <div className="rule-t">
                   {today.dueFollowUps.length === 0
-                    ? <p className="text-muted text-[.9rem] py-5">None due.</p>
-                    : today.dueFollowUps.map(l => <LeadRow key={l.id} lead={l} />)}
+                    ? <p className="text-muted text-[.93rem] py-5">None due.</p>
+                    : today.dueFollowUps.map((l, i) => <LeadRow key={l.id} lead={l} n={i + 1} due />)}
                 </div>
               </>
-            )
-          )}
+            ))}
+          </div>
 
-          {tab === 'inbox' && (
-            <>
-              <div className="flex flex-wrap gap-4 items-end mb-7">
-                <div>
-                  <label htmlFor="hq-status" className="lbl block mb-2 text-muted">Status</label>
-                  <select
-                    id="hq-status"
-                    value={status}
-                    onChange={e => setStatus(e.target.value)}
-                    className="px-3 py-2.5 text-[.9rem] bg-transparent outline-none"
-                    style={{ border: '2px solid var(--hairline)', color: 'var(--ink)' }}
-                  >
-                    <option value="">All</option>
-                    {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div className="flex-1 min-w-[12rem]">
-                  <label htmlFor="hq-q" className="lbl block mb-2 text-muted">Search</label>
-                  <input
-                    id="hq-q"
-                    value={q}
-                    onChange={e => setQ(e.target.value)}
-                    placeholder="Name, email, number, what they said"
-                    className="w-full px-3 py-2.5 text-[.9rem] bg-transparent outline-none"
-                    style={{ border: '2px solid var(--hairline)', color: 'var(--ink)' }}
-                  />
-                </div>
-              </div>
-
-              {inbox === null ? <p className="lbl text-muted">Loading…</p> : (
-                <>
-                  <p className="lbl text-muted mb-1" style={{ fontSize: '.7rem' }}>
-                    {inbox.total} {inbox.total === 1 ? 'lead' : 'leads'}
-                  </p>
-                  <div className="rule-t">
-                    {inbox.leads.length === 0
-                      ? <p className="text-muted text-[.9rem] py-5">Nothing matches.</p>
-                      : inbox.leads.map(l => <LeadRow key={l.id} lead={l} />)}
-                  </div>
-                </>
-              )}
-            </>
-          )}
-
-          {tab === 'insights' && (
-            insights === null ? <p className="lbl text-muted">Loading…</p> : (
+          {/* ------------------------------------------------------------ inbox */}
+          <div id="hq-panel-inbox" role="tabpanel" aria-labelledby="hq-tab-inbox" tabIndex={0} hidden={tab !== 'inbox'}>
+            {tab === 'inbox' && (
               <>
-                <p className="text-muted text-[.9rem] mb-8 max-w-[62ch]">
+                <div className="panel p-4 sm:p-5 mb-8 grid gap-4 grid-cols-1 sm:grid-cols-[12rem_minmax(0,1fr)] items-end">
+                  <div className="min-w-0">
+                    <label htmlFor="hq-status" className="lbl block mb-2 text-muted">Status</label>
+                    <select id="hq-status" value={status} onChange={e => setStatus(e.target.value)} className={fieldClass}>
+                      <option value="">All</option>
+                      {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="min-w-0">
+                    <label htmlFor="hq-q" className="lbl block mb-2 text-muted">Search</label>
+                    <input
+                      id="hq-q"
+                      type="search"
+                      value={q}
+                      onChange={e => setQ(e.target.value)}
+                      placeholder="Name, email, number, what they said"
+                      className={fieldClass}
+                    />
+                  </div>
+                </div>
+
+                {inbox === null ? <Loading /> : (
+                  <>
+                    <SectionHead
+                      aside={
+                        inbox.total > inbox.leads.length && (
+                          <span className="lbl text-muted text-[.64rem]">
+                            Showing the first <span className="num">{inbox.leads.length}</span>
+                          </span>
+                        )
+                      }
+                    >
+                      <span className="num">{inbox.total}</span> {inbox.total === 1 ? 'lead' : 'leads'} · hot first, then newest
+                    </SectionHead>
+                    <div className="rule-t" aria-live="polite">
+                      {inbox.leads.length === 0
+                        ? <p className="text-muted text-[.93rem] py-5">Nothing matches.</p>
+                        : inbox.leads.map((l, i) => <LeadRow key={l.id} lead={l} n={i + 1} />)}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* --------------------------------------------------------- insights */}
+          <div id="hq-panel-insights" role="tabpanel" aria-labelledby="hq-tab-insights" tabIndex={0} hidden={tab !== 'insights'}>
+            {tab === 'insights' && (insights === null ? <Loading /> : (
+              <>
+                <p className="text-muted text-[.93rem] leading-[1.6] mb-10 max-w-[62ch]">
                   Counts of what has actually arrived. Nothing here is a rate or a projection — with
-                  this few leads a percentage would read as a finding when it is noise.
+                  this few leads a percentage would read as a finding when it is noise. Junk is left
+                  out. Each bar is drawn against the largest row in its own list.
                 </p>
 
-                <h2 className="lbl text-muted mb-1" style={{ fontSize: '.7rem' }}>By tool</h2>
-                <div className="rule-t mb-10">
-                  {insights.byTool.length === 0
-                    ? <p className="text-muted text-[.9rem] py-5">No leads yet.</p>
-                    : insights.byTool.map(t => (
-                      <div key={t.formType} className="hair-b py-3.5 flex flex-wrap items-baseline justify-between gap-3">
-                        <span className="text-[1rem]">{t.label}</span>
-                        <span className="lbl text-muted" style={{ fontSize: '.7rem' }}>
-                          {t.leads} {t.leads === 1 ? 'lead' : 'leads'}
-                          {t.won > 0 && ` · ${t.won} won`}
-                        </span>
-                      </div>
-                    ))}
-                </div>
+                <div className="grid gap-12 lg:grid-cols-2 lg:gap-x-14">
+                  <div className="min-w-0 lg:col-span-2">
+                    <SectionHead>By tool</SectionHead>
+                    <div className="rule-t">
+                      {insights.byTool.length === 0
+                        ? <p className="text-muted text-[.93rem] py-5">No leads yet.</p>
+                        : insights.byTool.map(t => (
+                          <CountRow
+                            key={t.formType}
+                            label={t.label}
+                            value={t.leads}
+                            max={Math.max(...insights.byTool.map(x => x.leads))}
+                            extra={t.won > 0 ? `${t.won} won` : undefined}
+                          />
+                        ))}
+                    </div>
+                  </div>
 
-                <h2 className="lbl text-muted mb-1" style={{ fontSize: '.7rem' }}>By channel</h2>
-                <div className="rule-t mb-10">
-                  {insights.byChannel.length === 0
-                    ? <p className="text-muted text-[.9rem] py-5">No leads yet.</p>
-                    : insights.byChannel.map(c => (
-                      <div key={c.channel} className="hair-b py-3.5 flex items-baseline justify-between gap-3">
-                        <span className="text-[1rem]">{c.channel}</span>
-                        <span className="lbl text-muted" style={{ fontSize: '.7rem' }}>{c.leads}</span>
-                      </div>
-                    ))}
-                </div>
+                  <div className="min-w-0">
+                    <SectionHead>By channel</SectionHead>
+                    <div className="rule-t">
+                      {insights.byChannel.length === 0
+                        ? <p className="text-muted text-[.93rem] py-5">No leads yet.</p>
+                        : insights.byChannel.map(c => (
+                          <CountRow key={c.channel} label={c.channel} value={c.leads} max={Math.max(...insights.byChannel.map(x => x.leads))} />
+                        ))}
+                    </div>
+                  </div>
 
-                <h2 className="lbl text-muted mb-1" style={{ fontSize: '.7rem' }}>By campaign</h2>
-                <div className="rule-t">
-                  {insights.byCampaign.length === 0
-                    ? <p className="text-muted text-[.9rem] py-5">Nothing tagged yet.</p>
-                    : insights.byCampaign.map(c => (
-                      <div key={c.campaign} className="hair-b py-3.5 flex items-baseline justify-between gap-3">
-                        <span className="text-[1rem]">{c.campaign}</span>
-                        <span className="lbl text-muted" style={{ fontSize: '.7rem' }}>{c.leads}</span>
-                      </div>
-                    ))}
+                  <div className="min-w-0">
+                    <SectionHead>By campaign</SectionHead>
+                    <div className="rule-t">
+                      {insights.byCampaign.length === 0
+                        ? <p className="text-muted text-[.93rem] py-5">Nothing tagged yet.</p>
+                        : insights.byCampaign.map(c => (
+                          <CountRow key={c.campaign} label={c.campaign} value={c.leads} max={Math.max(...insights.byCampaign.map(x => x.leads))} />
+                        ))}
+                    </div>
+                  </div>
                 </div>
               </>
-            )
-          )}
+            ))}
+          </div>
         </div>
       </section>
     </>
