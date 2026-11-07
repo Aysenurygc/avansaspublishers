@@ -23,7 +23,8 @@ export default function Field({
     required,
     placeholder,
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value),
-    className: 'w-full px-3.5 py-3 text-[.95rem] bg-transparent outline-none transition-colors focus:border-ink',
+    // 1rem, not less: iOS Safari zooms the page into any input set below 16px.
+    className: 'w-full px-3.5 py-3 text-[1rem] bg-transparent outline-none transition-colors focus:border-ink',
     style: { border: '2px solid var(--hairline)', color: 'var(--ink)' },
   }
 

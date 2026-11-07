@@ -30,12 +30,12 @@ const ticked = v => v === true || v === 'true' || v === 'on' || v === '1'
  * @param {object} input  Whatever the form sent.
  * @param {object} ctx    { userAgent, baseUrl }
  * @returns {Promise<{ ok: true, id: string, repeat: boolean, junk: boolean }
- *                  | { ok: false, status: number, message: string }>}
+ *                  | { ok: false, status: number, code: string, message: string }>}
  */
 export async function intake(input = {}, ctx = {}) {
   const source = str(input.source, 60)
   if (!source || !SOURCES.has(source)) {
-    return { ok: false, status: 400, message: 'Unknown source.' }
+    return { ok: false, status: 400, code: 'unknown-source', message: 'Unknown source.' }
   }
 
   // The source decides the form type. A caller cannot name its own: the score
@@ -48,26 +48,26 @@ export async function intake(input = {}, ctx = {}) {
   const email   = input.email ? String(input.email).toLowerCase().trim().slice(0, 320) : null
 
   if (email && !EMAIL.test(email)) {
-    return { ok: false, status: 400, message: 'That email address does not look right.' }
+    return { ok: false, status: 400, code: 'bad-email', message: 'That email address does not look right.' }
   }
 
   let phone = null
   let phoneCc = null
   if (input.phone && String(input.phone).trim()) {
     const p = normalizePhone(input.phoneCc ?? '+1', input.phone)
-    if (!p.ok) return { ok: false, status: 400, message: p.reason }
+    if (!p.ok) return { ok: false, status: 400, code: 'bad-phone', message: p.reason }
     phone = p.phone
     phoneCc = p.cc
   }
 
   if (!email && !phone) {
-    return { ok: false, status: 400, message: 'Give us an email address or a phone number.' }
+    return { ok: false, status: 400, code: 'no-contact', message: 'Give us an email address or a phone number.' }
   }
 
   // A callback request with no number cannot be answered, so it is rejected
   // at the door rather than stored as a lead nobody can act on.
   if (formType === 'call_now' && !phone) {
-    return { ok: false, status: 400, message: 'A phone number is required to be called back.' }
+    return { ok: false, status: 400, code: 'call-needs-phone', message: 'A phone number is required to be called back.' }
   }
 
   const result = input.result && typeof input.result === 'object' ? input.result : null

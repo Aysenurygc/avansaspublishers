@@ -215,6 +215,27 @@ ok('llms.txt quotes no price', !/\$\s?\d/.test(llms))
 ok('llms.txt makes no bestseller claim', !/bestsell|guarantee|#1\b/i.test(llms))
 ok('/pricing is kept out of the sitemap', !/'\/pricing'/.test(discovery.match(/STATIC_PAGES = \[[\s\S]*?\]/)?.[0] ?? ''))
 
+/* ------------------------------- /thanks reflects no free text ----------- */
+
+const thanks = readFileSync(join(root, 'client/src/pages/Thanks.tsx'), 'utf8')
+ok(
+  '/thanks maps an error code and never prints the query string',
+  /REASONS\[error\]/.test(thanks) && !/>\{error\}</.test(thanks),
+  'a page that renders ?error= verbatim lets anyone put their own sentence, in our design, on our domain'
+)
+ok('/thanks falls back when the code is unrecognised', /\?\?\s*GENERIC/.test(thanks))
+
+const inboundSrc = readFileSync(join(root, 'server/src/routes/inbound.js'), 'utf8')
+ok(
+  'the error redirect carries a code, not the server sentence',
+  /error: out\.code/.test(inboundSrc) && !/error: out\.message/.test(inboundSrc)
+)
+
+for (const code of ['unknown-source', 'bad-email', 'bad-phone', 'no-contact', 'call-needs-phone']) {
+  ok(`intake returns the code "${code}"`, routeSrc.includes(`'${code}'`))
+  ok(`/thanks has copy for the code "${code}"`, new RegExp(`['"]?${code}['"]?\\s*:`).test(thanks))
+}
+
 /* ------------------------------------------------------------------ report */
 
 console.log(`\n${pass} checks passed`)

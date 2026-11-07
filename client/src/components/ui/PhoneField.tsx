@@ -50,19 +50,26 @@ const FALLBACK = [
 export default function PhoneField({ id, label = 'Phone', cc, phone, onCc, onPhone, required }: Props) {
   const w = useWording()
   const codes = w?.dialCodes?.length ? w.dialCodes : FALLBACK
+  const ccId = `${id}-cc`
 
   const box = { border: '2px solid var(--hairline)', color: 'var(--ink)' }
 
   return (
-    <div>
+    <div className="min-w-0">
       <label htmlFor={id} className="lbl block mb-2 text-muted">{label}</label>
-      <div className="flex gap-2">
+      {/* One row that never outgrows its column: the code shrinks to its
+          widest option, capped, and the number takes whatever is left. */}
+      <div className="flex gap-2 min-w-0">
+        <label htmlFor={ccId} className="sr-only">Country dialling code</label>
         <select
-          aria-label="Country dialling code"
+          id={ccId}
+          // Named, so a form posted without JavaScript carries the code the
+          // visitor actually chose rather than a hidden copy of the default.
+          name="phoneCc"
           value={cc}
           onChange={e => onCc(e.target.value)}
-          className="px-2.5 py-3 text-[.95rem] bg-transparent outline-none focus:border-ink flex-none"
-          style={{ ...box, maxWidth: '8.5rem' }}
+          className="num flex-none max-w-[7.5rem] px-2.5 py-3 text-[1rem] bg-transparent outline-none transition-colors focus:border-ink"
+          style={box}
         >
           {codes.map(c => (
             <option key={c.iso} value={c.cc}>
@@ -80,11 +87,10 @@ export default function PhoneField({ id, label = 'Phone', cc, phone, onCc, onPho
           required={required}
           onChange={e => onPhone(e.target.value)}
           placeholder="Your number"
-          className="w-full min-w-0 px-3.5 py-3 text-[.95rem] bg-transparent outline-none transition-colors focus:border-ink"
+          className="w-full min-w-0 flex-1 px-3.5 py-3 text-[1rem] bg-transparent outline-none transition-colors focus:border-ink"
           style={box}
         />
       </div>
-      <input type="hidden" name="phoneCc" value={cc} />
     </div>
   )
 }

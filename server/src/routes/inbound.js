@@ -41,7 +41,11 @@ router.post(
 
       if (!out.ok) {
         if (wantsHtml) {
-          const q = new URLSearchParams({ error: out.message })
+          // A code, never the prose. /thanks renders what it is given, so
+          // reflecting server text there would let anyone put their own
+          // sentence on the house's own domain, under its own design, by
+          // sending a crafted link. The page maps the code to its own copy.
+          const q = new URLSearchParams({ error: out.code ?? 'failed' })
           return res.redirect(303, `/thanks?${q}`)
         }
         return res.status(out.status).json({ message: out.message })
@@ -59,7 +63,7 @@ router.post(
     } catch (err) {
       console.error('inbound failed:', err)
       if (wantsHtml) {
-        const q = new URLSearchParams({ error: 'Something went wrong on our side.' })
+        const q = new URLSearchParams({ error: 'server' })
         return res.redirect(303, `/thanks?${q}`)
       }
       return res.status(500).json({ message: 'Something went wrong on our side.' })
